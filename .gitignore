@@ -30,3 +30,6 @@ Thumbs.db
 
 # Plugin state
 .omc/
+
+# Kotlin compiler cache
+.kotlin/
