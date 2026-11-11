@@ -3,6 +3,7 @@ package ai.deulleulcar.app.voice
 import ai.deulleulcar.app.sdk.FeatureState
 import ai.deulleulcar.core.voice.SpeechPriority
 import ai.deulleulcar.core.voice.SpeechQueue
+import ai.deulleulcar.core.voice.SpeechWatchdog
 import ai.pleos.playground.tts.TextToSpeech
 import ai.pleos.playground.tts.constant.ErrorType
 import ai.pleos.playground.tts.constant.Mode
@@ -35,6 +36,7 @@ class PleosSpeechOutput(context: Context, private val locale: Locale = Locale.KO
     override val speaking: StateFlow<Boolean> = _speaking.asStateFlow()
 
     private val queue = SpeechQueue<QueuedSpeech> { it.priority }
+    private val watchdog = SpeechWatchdog()
     private var tts: TextToSpeech? = null
     private var ready = false
     private var listenerAdded = false
@@ -43,7 +45,10 @@ class PleosSpeechOutput(context: Context, private val locale: Locale = Locale.KO
         override fun onReady() = Unit
 
         override fun onStart() {
-            main.post { Log.i(TAG, "onStart: ${queue.current?.text}") }
+            main.post {
+                Log.i(TAG, "onStart: ${queue.current?.text}")
+                armWatchdog() // 실제 발화 시작 시점부터 다시 잰다
+            }
         }
 
         override fun onDone() {
@@ -120,6 +125,7 @@ class PleosSpeechOutput(context: Context, private val locale: Locale = Locale.KO
 
     override fun stopAll() = onMain {
         val dropped = queue.clear()
+        watchdog.cancel()
         if (dropped.isNotEmpty()) runCatching { tts?.stop() }
         _speaking.value = false
         dropped.forEach { it.onDone?.invoke(false) }
@@ -128,6 +134,7 @@ class PleosSpeechOutput(context: Context, private val locale: Locale = Locale.KO
     override fun release() = onMain {
         val engine = tts ?: return@onMain
         queue.clear().forEach { it.onDone?.invoke(false) }
+        watchdog.cancel()
         tts = null
         ready = false
         runCatching { engine.stop() }
@@ -139,7 +146,22 @@ class PleosSpeechOutput(context: Context, private val locale: Locale = Locale.KO
         Log.i(TAG, "TTS release")
     }
 
-    private fun finishCurrent(completed: Boolean, why: String) {
+    private fun armWatchdog() {
+        val text = queue.current?.text ?: return
+        val token = watchdog.begin()
+        main.postDelayed({
+            if (watchdog.onTimeout(token)) {
+                Log.w(TAG, "watchdog done: $text")
+                finishCurrent(completed = true, why = "watchdog", fromWatchdog = true)
+            }
+        }, watchdog.estimateMs(text))
+    }
+
+    private fun finishCurrent(completed: Boolean, why: String, fromWatchdog: Boolean = false) {
+        if (!fromWatchdog && !watchdog.onRealFinish()) {
+            Log.i(TAG, "$why 무시(감시 타이머가 이미 처리함)")
+            return
+        }
         val done = queue.onCurrentFinished()
         Log.i(TAG, "$why: ${done?.text ?: "(끊김 → 다시 대기)"}")
         _speaking.value = false
@@ -153,6 +175,7 @@ class PleosSpeechOutput(context: Context, private val locale: Locale = Locale.KO
         val item = queue.next() ?: return
         _speaking.value = true
         Log.i(TAG, "speak(${item.priority}): ${item.text}")
+        armWatchdog()
         try {
             engine.speak(item.text, true)
         } catch (e: Exception) {
