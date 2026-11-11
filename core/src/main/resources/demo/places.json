@@ -1,0 +1,29 @@
+{
+  "zone": "역삼–선릉–대치 데모 구역 (가상 상호, 좌표는 도로변 근사값)",
+  "work": { "name": "회사 (데모)", "lat": 37.5004, "lon": 127.0356 },
+  "home": { "name": "집 (데모)", "lat": 37.4921, "lon": 127.0738 },
+  "places": [
+    { "id": "demo-pharmacy-1", "name": "역삼 행복약국", "category": "PHARMACY", "lat": 37.50085, "lon": 127.03920, "address": "역삼동 테헤란로변 (데모)" },
+    { "id": "demo-pharmacy-2", "name": "선릉 미소약국", "category": "PHARMACY", "lat": 37.50395, "lon": 127.04770, "address": "대치동 선릉로변 (데모)" },
+    { "id": "demo-pharmacy-3", "name": "대치 늘봄약국", "category": "PHARMACY", "lat": 37.49510, "lon": 127.06120, "address": "대치동 도곡로변 (데모)" },
+
+    { "id": "demo-mart-1", "name": "선릉 생활마트", "category": "MART", "lat": 37.50290, "lon": 127.05060, "address": "대치동 선릉로변 (데모)" },
+    { "id": "demo-mart-2", "name": "대치 알뜰마트", "category": "MART", "lat": 37.49610, "lon": 127.06500, "address": "대치동 삼성로변 (데모)" },
+    { "id": "demo-mart-3", "name": "역삼 생활용품점", "category": "MART", "lat": 37.49950, "lon": 127.04010, "address": "역삼동 논현로변 (데모)" },
+
+    { "id": "demo-laundry-1", "name": "역삼 깔끔세탁", "category": "LAUNDRY", "lat": 37.49900, "lon": 127.04210, "address": "역삼동 이면도로 (데모)" },
+    { "id": "demo-laundry-2", "name": "대치 하얀세탁", "category": "LAUNDRY", "lat": 37.49450, "lon": 127.06990, "address": "대치동 이면도로 (데모)" },
+
+    { "id": "demo-convenience-1", "name": "선릉 편의점", "category": "CONVENIENCE_STORE", "lat": 37.50200, "lon": 127.04600, "address": "역삼동 테헤란로변 (데모)" },
+
+    { "id": "demo-bank-1", "name": "데모은행 선릉지점", "category": "BANK", "lat": 37.50470, "lon": 127.04700, "address": "대치동 테헤란로변 (데모)" },
+
+    { "id": "demo-gas-1", "name": "역삼 셀프주유소", "category": "GAS_STATION", "lat": 37.49850, "lon": 127.04450, "address": "역삼동 언주로변 (데모)", "amenities": ["SELF_SERVICE", "AIR_PUMP"] },
+    { "id": "demo-gas-2", "name": "선릉 주유소", "category": "GAS_STATION", "lat": 37.50060, "lon": 127.05330, "address": "대치동 선릉로변 (데모)", "amenities": ["SELF_SERVICE", "AIR_PUMP"] },
+
+    { "id": "demo-repair-1", "name": "역삼 자동차정비", "category": "REPAIR_SHOP", "lat": 37.49740, "lon": 127.04300, "address": "역삼동 이면도로 (데모)" },
+    { "id": "demo-tire-1", "name": "대치 타이어", "category": "TIRE_SHOP", "lat": 37.49350, "lon": 127.06600, "address": "대치동 남부순환로변 (데모)", "amenities": ["AIR_PUMP"] },
+
+    { "id": "demo-ev-1", "name": "선릉 전기차충전소", "category": "EV_CHARGING", "lat": 37.50350, "lon": 127.05200, "address": "대치동 공영주차장 (데모)", "amenities": ["FAST_CHARGER"] }
+  ]
+}
