@@ -17,8 +17,8 @@
 ### 차의 할 일 등급 (초안)
 | 등급 | 예시 | 앱 동작 |
 |---|---|---|
-| 긴급 | 브레이크액 부족, 연료 극저(잔량 10% 미만, 주행 가능 거리 정보가 있으면 30km 미만) | 바로 TTS로 알림: 무슨 뜻인지, 계속 달려도 되는지, 가장 가까운 해결 장소. 수락하면 경유지 추가 |
-| 권장 | 타이어 저압, 연료 낮음, 엔진오일 레벨 경고 | 경로를 짤 때 "이번 경로에 겸사겸사 넣을까요? +3분"으로 강하게 추천 |
+| 긴급 | 브레이크 관련 경고등, 주행 가능 거리 30km 미만 | 바로 TTS로 알림: 무슨 뜻인지, 계속 달려도 되는지, 가장 가까운 해결 장소. 수락하면 경유지 추가 |
+| 권장 | 타이어 저압(TPMS 경고등), 주행 가능 거리 80km 미만, 엔진오일 경고등 | 경로를 짤 때 "이번 경로에 겸사겸사 넣을까요? +3분"으로 강하게 추천 |
 | 보류 | 워셔액 부족, 정기 점검 | 할 일 목록에 남김. 홈 카드에 계속 표시하고, 시동·정차 때 요약. 경로 근처에 해결 기회가 있으면 알림 |
 
 ## 범위
@@ -48,11 +48,15 @@
 | LLM | Gemini API 무료 티어(`gemini-3.5-flash-lite`). `LlmClient` 인터페이스로 감싸서 Claude(Haiku 5.5)로도 바꿀 수 있게 함. 키는 APK에 넣지 않고 설정 화면에서 입력, 키가 없으면 규칙 기반으로 동작 | Claude API는 무료 티어가 없음. Gemini 무료 티어는 입력 데이터가 Google 제품 개선에 쓰이므로 데모 데이터만 보내고 개인정보는 보내지 않음 |
 | 장소·영업시간 | 장소 검색은 카카오 로컬. 영업시간은 업종별 기본값 + 데모 구역에서 직접 모은 큐레이션 JSON. `HoursProvider` 인터페이스로 분리 | 카카오 로컬에는 영업시간이 없음. Google Places 연동은 기획서에 확장 계획으로만 기재 |
 | 이름 표기 | 익명 팀명을 APK, 레포, 커밋 작성자에 사용. 실명은 접수양식 01에만 기재 | 실명 노출 금지 조항 |
+| 차량 신호 소스 | 타이어 = Safety telltales의 TPMS(+Tire API 지원 시 보조), 연료/배터리 = Energy 주행 가능 거리(+fuel percent·SOC 지원 시 보조), 주행/정차 = 기어(P=정차, 그 외=주행), 기타 경고 = telltales에 있는 것만 | Virtual Console에서 재현 가능한 신호 기준 (2026-11-11 문서 확인). 각 도메인은 `checkXXXCapabilities`로 지원 여부 확인 후 사용 |
 
 ## 기술 스택 / 제약
 - Android (Kotlin), minSdk 28 이상, Gradle 8 이상, Pleos Connect Emulator (AAOS 기반)
 - Pleos Connect SDK
-  - Vehicle: Safety(telltales, engine oil, brake fluid, washer), Tire, Fuel, Odometer
+  - Maven: `https://nexus-playground.pleos.ai/repository/maven-releases/` — `ai.pleos.playground:Vehicle:2.3.2`, `NaviHelper:3.0.5`, `SpeechToText:3.3.1`, `TextToSpeech:3.3.1`, `FusedLocation:1.1.3`
+  - Vehicle: Safety(telltales), Energy/Odometer(주행 가능 거리), 기어(주행 상태), Tire·Fuel(지원 시 보조) — 권한 `pleos.car.permission.CAR_SAFETY`, `CAR_ENERGY`, `CAR_DRIVE`, `CAR_INFO`
+  - 권한: `NAVI_ROUTE`, `NAVI_ROUTE_SEARCH`, `FUSED_LOCATION`, `STT_SERVICE`, `TTS_SERVICE` (접두사 `pleos.car.permission.`)
+  - Virtual Console: `adb forward tcp:8088 tcp:8088` → http://127.0.0.1:8088/ (Gear, Telltales, Remaining Range 등)
   - NaviHelper: `requestRouteWithWaypoints`, `addWaypoint`, `onWayPointArrived`, `onRouteStateInfo`, `onTBTInfo`, `onDestinationArrived` (도착 후 슬롯 동작은 T13에서 확인)
   - FusedLocation: 현재 위치, `addProximityAlert`
   - STT: ON_DEVICE 모드 (앱 등록 불필요) / TTS
@@ -67,8 +71,8 @@
 - [ ] release APK가 Pleos Connect Emulator에서 설치·실행되고 crash 없이 3개 시나리오를 완주
 - [ ] 시나리오 1: 음성 "퇴근길에 약국이랑 마트 들러" → 정류지 2개 이상이 최적 순서로 나오고 "+N분" 안내 → 확인하면 NaviHelper 경로 요청이 성공
 - [ ] 시나리오 2: 정류지가 3개 이상이면 롤링 경유지가 동작 (도착 이벤트 후 다음 정류지가 들어감)
-- [ ] 시나리오 3: Virtual Console로 타이어 저압을 발생 → 권장 할 일로 등록 → **경로에 자동으로 추가되지 않음** → 다음 경로를 짤 때 추천 → 수락하면 계획에 합쳐짐
-- [ ] 긴급 경고(연료 극저 등)는 즉시 TTS 안내 + 해결 장소 제안. 보류 항목은 홈 카드에 계속 남음
+- [ ] 시나리오 3: Virtual Console에서 TPMS 경고등을 켬 → 권장 할 일로 등록 → **경로에 자동으로 추가되지 않음** → 다음 경로를 짤 때 추천 → 수락하면 계획에 합쳐짐
+- [ ] 긴급 경고(주행 가능 거리 30km 미만 등)는 즉시 TTS 안내 + 해결 장소 제안. 보류 항목은 홈 카드에 계속 남음
 - [ ] API 키 없이도 규칙 기반 fallback으로 시나리오 1~3이 동작
 - [ ] 단위 테스트 통과: 순서 최적화(영업시간 반영), 등급 분류기, 볼일 파서 fallback, 롤링 경유지 상태 머신
 - [ ] GitHub: `apk/{이름}_{앱이름}_release.apk`, README에 4개 필수 항목(앱 이름·한 줄 소개 / 실행 방법 / 테스트 환경·설정 / APK 위치), 실명 0건
