@@ -76,7 +76,7 @@
 - [ ] 시연 영상 60~120초: 시나리오 1·3이 들어가고 화면 녹화 포함
 
 ## 미결 사항
-1. **커밋 작성자 이메일**: 지금은 임시값 `deulleulcar.studio@users.noreply.example`을 씀. GitHub 계정이 정해지면 push 전에 바꿀지 결정
+1. ~~커밋 작성자 이메일~~ → 해결: GitHub noreply 주소 사용, 원격 `kmin-k/DeulleulCar` 연결
 2. **Telltales API 세부 항목**: 지원하는 경고등 종류를 T12에서 확인한 뒤 등급표 확정
 3. **Gemini 무료 티어 호출 한도**: 문서에 수치가 없음. T7에서 AI Studio로 확인하고, 부족하면 Haiku 5.5로 전환할지 다시 질문
 
