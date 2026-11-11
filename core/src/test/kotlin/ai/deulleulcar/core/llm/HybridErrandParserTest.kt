@@ -180,6 +180,71 @@ class HybridErrandParserTest {
         assertEquals(FallbackReason.NETWORK, out.fallbackReason)
     }
 
+    private fun status(code: Int) = MockResponse().setResponseCode(code).setBody("""{"error":{"message":"busy"}}""")
+
+    private fun retrying(overallTimeoutMillis: Long = 7_000) = HybridErrandParser(
+        LlmErrandParser(GeminiClient({ FAKE_KEY }, baseUrl = server.url("/").toString())),
+        overallTimeoutMillis = overallTimeoutMillis,
+        retryBackoffMillis = 50,
+        minAttemptMillis = 500,
+    )
+
+    @Test
+    fun `503 다음 200이면 재시도로 LLM 성공`() = runBlocking {
+        server.enqueue(status(503))
+        server.enqueue(geminiResponse(PHARMACY_MART_HOME))
+        val out = retrying().parse(utterance)
+        assertEquals(ParseSource.LLM, out.source)
+        assertEquals(2, server.requestCount)
+    }
+
+    @Test
+    fun `503이 두 번이면 fallback`() = runBlocking {
+        server.enqueue(status(503))
+        server.enqueue(status(503))
+        val out = retrying().parse(utterance)
+        assertEquals(ParseSource.RULE, out.source)
+        assertEquals(FallbackReason.HTTP_ERROR, out.fallbackReason)
+        assertEquals(ruleResult, out.request)
+        assertEquals(2, server.requestCount)
+    }
+
+    @Test
+    fun `429 다음 200이면 재시도로 LLM 성공`() = runBlocking {
+        server.enqueue(status(429))
+        server.enqueue(geminiResponse(PHARMACY_MART_HOME))
+        assertEquals(ParseSource.LLM, retrying().parse(utterance).source)
+        assertEquals(2, server.requestCount)
+    }
+
+    @Test
+    fun `429가 두 번이면 fallback`() = runBlocking {
+        server.enqueue(status(429))
+        server.enqueue(status(429))
+        val out = retrying().parse(utterance)
+        assertEquals(FallbackReason.HTTP_ERROR, out.fallbackReason)
+        assertEquals(2, server.requestCount)
+    }
+
+    @Test
+    fun `남은 시간이 부족하면 재시도 없이 fallback`() = runBlocking {
+        server.enqueue(status(503))
+        server.enqueue(geminiResponse(PHARMACY_MART_HOME))
+        // 상한 400ms < 백오프 50 + 최소 시도 500
+        val out = retrying(overallTimeoutMillis = 400).parse(utterance)
+        assertEquals(ParseSource.RULE, out.source)
+        assertEquals(FallbackReason.HTTP_ERROR, out.fallbackReason)
+        assertEquals(1, server.requestCount)
+    }
+
+    @Test
+    fun `500은 재시도하지 않는다`() = runBlocking {
+        server.enqueue(status(500))
+        server.enqueue(geminiResponse(PHARMACY_MART_HOME))
+        assertEquals(ParseSource.RULE, retrying().parse(utterance).source)
+        assertEquals(1, server.requestCount)
+    }
+
     @Test
     fun `프롬프트 업종 목록은 enum에서 만든다`() {
         PlaceCategory.entries.forEach {
