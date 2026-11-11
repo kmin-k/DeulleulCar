@@ -97,7 +97,7 @@
 - [ ] **T2** UX 설계: 시나리오 3개의 화면 흐름, 음성 대화 스크립트, 주행·정차 상태별 UI 규칙, 화면 시안(HTML 목업 → PNG) → `docs/ux/` — 검증: 시나리오 1~3을 모든 화면이 커버함
 
 ### Phase 2. 코어 로직 (🤖, 순수 Kotlin + JVM 테스트)
-- [ ] **T3** 프로젝트 스캐폴드: Gradle KTS, `:core`(순수 Kotlin) / `:app`(Compose), Pleos SDK 의존성, `.gitignore`, 커밋 작성자 익명 설정 — 검증: `gradlew :core:test` 및 `assembleDebug` 성공
+- [x] **T3** 프로젝트 스캐폴드: Gradle KTS, `:core`(순수 Kotlin) / `:app`(Compose), Pleos SDK 의존성, `.gitignore`, 커밋 작성자 익명 설정 — 검증: `gradlew :core:test` 및 `assembleDebug` 성공
 - [ ] **T4** 도메인 모델 + 차량 할 일 등급 분류기 (긴급 / 권장 / 보류) — 검증: 경고 유형별 등급 단위 테스트
 - [ ] **T5** 볼일 파서 규칙 기반 fallback ("A랑 B 들러", "~가는 길에" 등) — 검증: 대표 발화 20개 테스트
 - [ ] **T6** `LlmClient` + Gemini 구현 (JSON 스키마 응답), 실패하면 fallback으로 전환 — 검증: fake 서버 테스트 + 실제 호출 1회 확인
