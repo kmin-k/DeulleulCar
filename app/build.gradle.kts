@@ -33,6 +33,7 @@ android {
 
 dependencies {
     implementation(project(":core"))
+    implementation(libs.kotlinx.coroutines.android)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
@@ -43,8 +44,10 @@ dependencies {
     debugImplementation(libs.compose.ui.tooling)
 
     implementation(libs.pleos.vehicle)
+    implementation(libs.pleos.vehicle.data)
     implementation(libs.pleos.navihelper)
     implementation(libs.pleos.stt)
     implementation(libs.pleos.tts)
     implementation(libs.pleos.fusedlocation)
+    implementation(libs.pleos.fusedlocation.data)
 }

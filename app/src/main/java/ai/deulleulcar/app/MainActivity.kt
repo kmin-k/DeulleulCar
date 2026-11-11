@@ -2,7 +2,9 @@ package ai.deulleulcar.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import ai.deulleulcar.app.sdk.RuntimePermissions
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,8 +18,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 
 class MainActivity : ComponentActivity() {
+    private val permissionRequest = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // 마이크(STT)·위치 등 런타임 권한. 거절해도 앱은 해당 기능 없이 동작한다.
+        RuntimePermissions.missing(this).takeIf { it.isNotEmpty() }?.let { permissionRequest.launch(it.toTypedArray()) }
         setContent { PlaceholderScreen() }
     }
 }

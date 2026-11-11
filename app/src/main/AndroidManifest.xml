@@ -6,6 +6,8 @@
 
     <!-- Pleos Connect SDK -->
     <uses-permission android:name="pleos.car.permission.CAR_SAFETY" />
+    <!-- Vehicle 2.3.2 telltales API는 어노테이션상 PRIVATE_CAR_SAFETY를 요구 -->
+    <uses-permission android:name="pleos.car.permission.PRIVATE_CAR_SAFETY" />
     <uses-permission android:name="pleos.car.permission.CAR_ENERGY" />
     <uses-permission android:name="pleos.car.permission.CAR_DRIVE" />
     <uses-permission android:name="pleos.car.permission.CAR_INFO" />
@@ -16,6 +18,7 @@
     <uses-permission android:name="pleos.car.permission.TTS_SERVICE" />
 
     <application
+        android:name=".DeulleulCarApp"
         android:allowBackup="false"
         android:label="@string/app_name"
         android:supportsRtl="true"
