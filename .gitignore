@@ -1,0 +1,29 @@
+# Android / Gradle
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Signing
+*.jks
+*.keystore
+keystore.properties
+
+# Secrets
+.env
+*.env
+
+# Submission files with personal info (never commit)
+docs/form/
+docs/submission/
+
+# Claude local
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
