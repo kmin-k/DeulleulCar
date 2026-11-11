@@ -27,3 +27,6 @@ docs/submission/
 # OS
 .DS_Store
 Thumbs.db
+
+# Plugin state
+.omc/
