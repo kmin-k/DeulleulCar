@@ -1,7 +1,7 @@
 package ai.deulleulcar.core.navi
 
 import ai.deulleulcar.core.model.Stop
-import ai.deulleulcar.core.route.GeoPoint
+import ai.deulleulcar.core.model.GeoPoint
 import java.time.Instant
 
 /** NaviHelper 경유지 슬롯. 내비는 경유지를 최대 2개까지만 받는다. */

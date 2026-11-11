@@ -34,7 +34,10 @@ data class Place(
     val category: PlaceCategory,
     val address: String? = null,
     val openingHours: OpeningHours? = null,
-)
+) {
+    /** 좌표(이름 포함). */
+    val point: GeoPoint get() = GeoPoint(lat, lon, name)
+}
 
 /** 하루 안의 영업 구간. [close]가 [open]보다 이르거나 같으면 자정을 넘겨 다음 날 [close]까지 영업한다. */
 data class TimeRange(val open: LocalTime, val close: LocalTime) {

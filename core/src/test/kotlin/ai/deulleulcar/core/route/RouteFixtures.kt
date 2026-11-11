@@ -1,5 +1,6 @@
 package ai.deulleulcar.core.route
 
+import ai.deulleulcar.core.model.GeoPoint
 import ai.deulleulcar.core.model.Errand
 import ai.deulleulcar.core.model.OpeningHours
 import ai.deulleulcar.core.model.Place

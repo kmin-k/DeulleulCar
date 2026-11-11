@@ -1,29 +1,8 @@
 package ai.deulleulcar.core.place
 
+import ai.deulleulcar.core.model.GeoPoint
 import ai.deulleulcar.core.model.Place
 import ai.deulleulcar.core.model.PlaceCategory
-import kotlin.math.asin
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
-
-/** WGS84 위경도 좌표. */
-data class GeoPoint(val lat: Double, val lon: Double) {
-    /** 두 지점 사이 대원 거리(미터, haversine). */
-    fun distanceTo(other: GeoPoint): Double {
-        val dLat = Math.toRadians(other.lat - lat)
-        val dLon = Math.toRadians(other.lon - lon)
-        val a = sin(dLat / 2).let { it * it } +
-            cos(Math.toRadians(lat)) * cos(Math.toRadians(other.lat)) * sin(dLon / 2).let { it * it }
-        return 2 * EARTH_RADIUS_M * asin(sqrt(a))
-    }
-
-    companion object {
-        const val EARTH_RADIUS_M = 6_371_000.0
-    }
-}
-
-val Place.point: GeoPoint get() = GeoPoint(lat, lon)
 
 /**
  * 장소의 "해결 장소" 속성. 카카오 로컬은 이 정보를 주지 않으므로 데모 시드 데이터에만 있다.

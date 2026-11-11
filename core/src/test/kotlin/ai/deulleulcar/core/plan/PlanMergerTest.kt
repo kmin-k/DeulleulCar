@@ -17,7 +17,7 @@ import ai.deulleulcar.core.route.Fixtures.hours
 import ai.deulleulcar.core.route.Fixtures.place
 import ai.deulleulcar.core.route.Fixtures.request
 import ai.deulleulcar.core.route.Fixtures.route
-import ai.deulleulcar.core.route.GeoPoint
+import ai.deulleulcar.core.model.GeoPoint
 import ai.deulleulcar.core.route.RouteOptimizer
 import ai.deulleulcar.core.route.RoutePlan
 import ai.deulleulcar.core.route.TravelTimeEstimator

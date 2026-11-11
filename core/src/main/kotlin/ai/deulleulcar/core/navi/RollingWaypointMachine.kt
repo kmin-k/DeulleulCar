@@ -1,7 +1,7 @@
 package ai.deulleulcar.core.navi
 
 import ai.deulleulcar.core.model.Stop
-import ai.deulleulcar.core.route.GeoPoint
+import ai.deulleulcar.core.model.GeoPoint
 import ai.deulleulcar.core.route.Josa
 import ai.deulleulcar.core.route.RouteSpeech
 import java.time.Duration

@@ -4,7 +4,7 @@ import ai.deulleulcar.core.model.CarTask
 import ai.deulleulcar.core.model.Place
 import ai.deulleulcar.core.model.Stop
 import ai.deulleulcar.core.model.StopSource
-import ai.deulleulcar.core.route.GeoPoint
+import ai.deulleulcar.core.model.GeoPoint
 import ai.deulleulcar.core.route.RouteOptimizer
 import ai.deulleulcar.core.route.RoutePlan
 import ai.deulleulcar.core.route.RouteRequest

@@ -1,5 +1,6 @@
 package ai.deulleulcar.core.place
 
+import ai.deulleulcar.core.model.GeoPoint
 import ai.deulleulcar.core.model.HoursSource
 import ai.deulleulcar.core.model.Place
 import ai.deulleulcar.core.model.PlaceCategory

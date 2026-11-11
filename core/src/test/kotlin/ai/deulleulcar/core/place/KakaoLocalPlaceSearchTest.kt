@@ -1,5 +1,6 @@
 package ai.deulleulcar.core.place
 
+import ai.deulleulcar.core.model.GeoPoint
 import ai.deulleulcar.core.model.PlaceCategory
 import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient

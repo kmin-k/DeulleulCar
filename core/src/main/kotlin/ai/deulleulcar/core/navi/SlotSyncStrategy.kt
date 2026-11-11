@@ -1,7 +1,7 @@
 package ai.deulleulcar.core.navi
 
 import ai.deulleulcar.core.model.Stop
-import ai.deulleulcar.core.route.GeoPoint
+import ai.deulleulcar.core.model.GeoPoint
 
 /** 경유지를 다시 맞추는 이유. */
 enum class SyncCause {

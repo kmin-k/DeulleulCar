@@ -1,5 +1,6 @@
 package ai.deulleulcar.core.route
 
+import ai.deulleulcar.core.model.GeoPoint
 import ai.deulleulcar.core.model.Stop
 import java.time.Duration
 import java.time.LocalDateTime

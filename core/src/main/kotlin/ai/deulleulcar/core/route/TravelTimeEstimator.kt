@@ -1,5 +1,6 @@
 package ai.deulleulcar.core.route
 
+import ai.deulleulcar.core.model.GeoPoint
 import ai.deulleulcar.core.model.Place
 import ai.deulleulcar.core.model.PlaceCategory
 import java.time.Duration
@@ -8,11 +9,6 @@ import kotlin.math.cos
 import kotlin.math.roundToLong
 import kotlin.math.sin
 import kotlin.math.sqrt
-
-/** 위경도 한 점(WGS84). 출발지·목적지처럼 [Place]가 아닌 지점에 쓴다. */
-data class GeoPoint(val lat: Double, val lon: Double, val name: String? = null)
-
-val Place.point: GeoPoint get() = GeoPoint(lat, lon, name)
 
 /**
  * 이동 시간 추정기. 지금은 직선거리 기반([HaversineEstimator])이고,

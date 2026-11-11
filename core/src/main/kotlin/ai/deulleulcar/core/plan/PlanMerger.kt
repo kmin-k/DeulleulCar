@@ -1,7 +1,7 @@
 package ai.deulleulcar.core.plan
 
 import ai.deulleulcar.core.cartask.CarTaskClassifier
-import ai.deulleulcar.core.route.GeoPoint
+import ai.deulleulcar.core.model.GeoPoint
 import ai.deulleulcar.core.route.RouteOptimizer
 import ai.deulleulcar.core.route.RoutePlan
 import java.time.Clock

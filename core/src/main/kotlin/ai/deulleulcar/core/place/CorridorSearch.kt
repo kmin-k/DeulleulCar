@@ -1,5 +1,6 @@
 package ai.deulleulcar.core.place
 
+import ai.deulleulcar.core.model.GeoPoint
 import ai.deulleulcar.core.model.Place
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
