@@ -18,6 +18,16 @@ object Josa {
     /** 이에요/예요 */
     fun ieyo(word: String) = word + if (hasFinalConsonant(word)) "이에요" else "예요"
 
+    /** 으로/로 (ㄹ받침은 "로") */
+    fun euroRo(word: String): String {
+        val c = word.trimEnd().lastOrNull()
+        val rieul = c != null && c in '가'..'힣' && (c - '가') % 28 == 8
+        return word + if (hasFinalConsonant(word) && !rieul) "으로" else "로"
+    }
+
+    /** 은/는 */
+    fun eunNeun(word: String) = word + if (hasFinalConsonant(word)) "은" else "는"
+
     /** 을/를 */
     fun eulReul(word: String) = word + if (hasFinalConsonant(word)) "을" else "를"
 }
