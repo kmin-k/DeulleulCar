@@ -43,6 +43,10 @@ class PleosSpeechInput(context: Context, private val locale: Locale = Locale.KOR
 
     private var stt: SpeechToText? = null
     private var ready = false
+    private var listenerAdded = false
+
+    /** 초기화 중에 listen()이 오면 끝난 뒤 시작한다(타임아웃 ms). */
+    private var pendingListenMs: Long? = null
     private var gotFinal = false
     private var lastPartial: String? = null
     private val timeout = Runnable {
@@ -117,15 +121,24 @@ class PleosSpeechInput(context: Context, private val locale: Locale = Locale.KOR
             return@onMain
         }
         stt = engine
-        engine.addListener(listener)
+        // TTS와 같은 구조: addListener는 initialize 완료 뒤에 등록한다(완료 전 호출 시 SDK lateinit 크래시).
         engine.initialize(object : OnInitializeListener {
             override fun onSuccess() {
                 main.post {
                     if (stt !== engine) return@post
+                    try {
+                        engine.addListener(listener)
+                        listenerAdded = true
+                    } catch (e: Exception) {
+                        Log.w(TAG, "addListener 실패", e)
+                        _state.value = FeatureState.FAILED
+                        return@post
+                    }
                     runCatching { engine.setLocale(locale) }.onFailure { Log.w(TAG, "setLocale 실패", it) }
                     ready = true
                     _state.value = FeatureState.ACTIVE
                     Log.i(TAG, "STT 초기화 완료 (ON_DEVICE, $locale)")
+                    pendingListenMs?.let { pendingListenMs = null; listen(it) }
                 }
             }
 
@@ -133,6 +146,10 @@ class PleosSpeechInput(context: Context, private val locale: Locale = Locale.KOR
                 main.post {
                     Log.w(TAG, "STT 초기화 실패: $errorType")
                     _state.value = if (errorType == ErrorType.PERMISSION_DENIED) FeatureState.PERMISSION_DENIED else FeatureState.FAILED
+                    if (pendingListenMs != null) {
+                        pendingListenMs = null
+                        emit(SttEvent.Error("init_failed:$errorType"))
+                    }
                 }
             }
         })
@@ -141,6 +158,11 @@ class PleosSpeechInput(context: Context, private val locale: Locale = Locale.KOR
     override fun listen(timeoutMs: Long) = onMain {
         val engine = stt
         when {
+            engine != null && !ready && _state.value == FeatureState.UNKNOWN -> {
+                Log.i(TAG, "listen: 초기화 중 → 끝나면 시작")
+                pendingListenMs = timeoutMs
+                return@onMain
+            }
             engine == null || !ready -> {
                 Log.w(TAG, "listen: 초기화 전 (state=${_state.value})")
                 emit(SttEvent.Error("not_ready"))
@@ -181,7 +203,9 @@ class PleosSpeechInput(context: Context, private val locale: Locale = Locale.KOR
         }
         stt = null
         ready = false
-        runCatching { engine.removeListener(listener) }
+        if (listenerAdded) runCatching { engine.removeListener(listener) }
+        listenerAdded = false
+        pendingListenMs = null
         runCatching { engine.release() }
         _state.value = FeatureState.UNKNOWN
         Log.i(TAG, "STT release")

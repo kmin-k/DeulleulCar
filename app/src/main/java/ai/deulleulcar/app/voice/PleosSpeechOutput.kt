@@ -37,6 +37,7 @@ class PleosSpeechOutput(context: Context, private val locale: Locale = Locale.KO
     private val queue = SpeechQueue<QueuedSpeech> { it.priority }
     private var tts: TextToSpeech? = null
     private var ready = false
+    private var listenerAdded = false
 
     private val listener = object : EventListener {
         override fun onReady() = Unit
@@ -70,11 +71,20 @@ class PleosSpeechOutput(context: Context, private val locale: Locale = Locale.KO
             return@onMain
         }
         tts = engine
-        engine.addEventListener(listener)
+        // addEventListener는 initialize 완료 전에 부르면 SDK 내부 lateinit 접근으로 크래시한다(에뮬레이터 실측).
+        // → 초기화 성공 콜백에서 등록한다.
         engine.initialize(object : OnInitializeListener {
             override fun onSuccess() {
                 main.post {
                     if (tts !== engine) return@post
+                    try {
+                        engine.addEventListener(listener)
+                        listenerAdded = true
+                    } catch (e: Exception) {
+                        Log.w(TAG, "addEventListener 실패", e)
+                        _state.value = FeatureState.FAILED
+                        return@post
+                    }
                     runCatching { engine.setLocale(locale) }.onFailure { Log.w(TAG, "setLocale 실패", it) }
                     ready = true
                     _state.value = FeatureState.ACTIVE
@@ -121,7 +131,8 @@ class PleosSpeechOutput(context: Context, private val locale: Locale = Locale.KO
         tts = null
         ready = false
         runCatching { engine.stop() }
-        runCatching { engine.removeEventListener(listener) }
+        if (listenerAdded) runCatching { engine.removeEventListener(listener) }
+        listenerAdded = false
         runCatching { engine.release() }
         _speaking.value = false
         _state.value = FeatureState.UNKNOWN
