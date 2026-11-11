@@ -3,6 +3,13 @@ package ai.deulleulcar.app
 import ai.deulleulcar.app.vehicle.FakeVehicleSignalSource
 import ai.deulleulcar.app.vehicle.PleosVehicleSignalSource
 import ai.deulleulcar.app.vehicle.VehicleSignalSource
+import ai.deulleulcar.app.voice.FakeSpeechInput
+import ai.deulleulcar.app.voice.FakeSpeechOutput
+import ai.deulleulcar.app.voice.PleosSpeechInput
+import ai.deulleulcar.app.voice.PleosSpeechOutput
+import ai.deulleulcar.app.voice.SpeechInput
+import ai.deulleulcar.app.voice.SpeechOutput
+import ai.deulleulcar.app.voice.VoiceAnnouncer
 import android.content.Context
 
 /**
@@ -15,4 +22,15 @@ class AppContainer(context: Context, val useFakes: Boolean = false) {
     val vehicle: VehicleSignalSource by lazy {
         if (useFakes) FakeVehicleSignalSource() else PleosVehicleSignalSource(appContext)
     }
+
+    val speechInput: SpeechInput by lazy {
+        if (useFakes) FakeSpeechInput() else PleosSpeechInput(appContext)
+    }
+
+    val speechOutput: SpeechOutput by lazy {
+        if (useFakes) FakeSpeechOutput() else PleosSpeechOutput(appContext)
+    }
+
+    /** 말 걸기는 모두 여기로. TBT 거리에 따라 보류·즉시를 고른다. */
+    val announcer: VoiceAnnouncer by lazy { VoiceAnnouncer(speechOutput) }
 }
