@@ -17,7 +17,7 @@
 ### 차의 할 일 등급 (초안)
 | 등급 | 예시 | 앱 동작 |
 |---|---|---|
-| 긴급 | 브레이크액 부족, 연료 극저(주행 가능 거리 < 30km) | 바로 TTS로 알림: 무슨 뜻인지, 계속 달려도 되는지, 가장 가까운 해결 장소. 수락하면 경유지 추가 |
+| 긴급 | 브레이크액 부족, 연료 극저(잔량 10% 미만, 주행 가능 거리 정보가 있으면 30km 미만) | 바로 TTS로 알림: 무슨 뜻인지, 계속 달려도 되는지, 가장 가까운 해결 장소. 수락하면 경유지 추가 |
 | 권장 | 타이어 저압, 연료 낮음, 엔진오일 레벨 경고 | 경로를 짤 때 "이번 경로에 겸사겸사 넣을까요? +3분"으로 강하게 추천 |
 | 보류 | 워셔액 부족, 정기 점검 | 할 일 목록에 남김. 홈 카드에 계속 표시하고, 시동·정차 때 요약. 경로 근처에 해결 기회가 있으면 알림 |
 
@@ -42,11 +42,10 @@
 | 아이디어 | 심부름 라우터 + 경고등 통역사를 하나로 합친 앱 | 둘 다 결과가 "경로 위의 할 일"이라 하나로 묶임. 차량특화성과 일상 효용을 동시에 확보 |
 | 차가 감지한 할 일 | 허락 전에는 동선에 넣지 않고, 등급별로 추천하거나 목록에 남김 | 사용자 결정. 경고를 바로 해결하지 않는 현실적인 운전 습관을 반영 |
 | 경유지 2개 제한 | 롤링 경유지로 해결 (`onWayPointArrived`가 오면 다음 정류지 투입) | NaviHelper는 경유지를 최대 2개(FIRST/SECOND)까지만 받음 |
-| LLM | Claude API. 키는 APK에 넣지 않고 앱 설정 화면에서 입력. 키가 없으면 규칙 기반으로 동작 | 키 유출 방지 + 심사위원이 키 없이 APK를 실행해도 동작 |
 | 기획서 형식 | 공식 접수양식 DOCX의 02 섹션을 채움. 화면 시안은 별지로 첨부 | 제출 규정 |
 | 익명성 | 레포, 커밋 작성자, README, 첨부자료에 실명·개인정보를 넣지 않음 | 접수양식 안내: "개발자 실명 노출 금지" |
 | 부문 | 대학생 | 사용자 정보 |
-| LLM | Gemini API 무료 티어(`gemini-3.5-flash-lite`). `LlmClient` 인터페이스로 감싸서 Claude(Haiku 5.5)로도 바꿀 수 있게 함 | Claude API는 무료 티어가 없음. Gemini 무료 티어는 입력 데이터가 Google 제품 개선에 쓰이므로 데모 데이터만 보내고 개인정보는 보내지 않음 |
+| LLM | Gemini API 무료 티어(`gemini-3.5-flash-lite`). `LlmClient` 인터페이스로 감싸서 Claude(Haiku 5.5)로도 바꿀 수 있게 함. 키는 APK에 넣지 않고 설정 화면에서 입력, 키가 없으면 규칙 기반으로 동작 | Claude API는 무료 티어가 없음. Gemini 무료 티어는 입력 데이터가 Google 제품 개선에 쓰이므로 데모 데이터만 보내고 개인정보는 보내지 않음 |
 | 장소·영업시간 | 장소 검색은 카카오 로컬. 영업시간은 업종별 기본값 + 데모 구역에서 직접 모은 큐레이션 JSON. `HoursProvider` 인터페이스로 분리 | 카카오 로컬에는 영업시간이 없음. Google Places 연동은 기획서에 확장 계획으로만 기재 |
 | 이름 표기 | 익명 팀명을 APK, 레포, 커밋 작성자에 사용. 실명은 접수양식 01에만 기재 | 실명 노출 금지 조항 |
 
@@ -54,7 +53,7 @@
 - Android (Kotlin), minSdk 28 이상, Gradle 8 이상, Pleos Connect Emulator (AAOS 기반)
 - Pleos Connect SDK
   - Vehicle: Safety(telltales, engine oil, brake fluid, washer), Tire, Fuel, Odometer
-  - NaviHelper: `requestRouteWithWaypoints`, `onWayPointArrived`, `onRouteStateInfo`, `onTripInfo`
+  - NaviHelper: `requestRouteWithWaypoints`, `addWaypoint`, `onWayPointArrived`, `onRouteStateInfo`, `onTBTInfo`, `onDestinationArrived` (도착 후 슬롯 동작은 T13에서 확인)
   - FusedLocation: 현재 위치, `addProximityAlert`
   - STT: ON_DEVICE 모드 (앱 등록 불필요) / TTS
 - UI: Jetpack Compose (차량 화면 기준 큰 터치 영역, 다크 테마)
