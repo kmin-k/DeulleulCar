@@ -159,11 +159,11 @@ class PlanMergerTest {
 
     @Test
     fun `기존 볼일과 함께 들를 수 없는 해결지는 권장으로 추천하지 않는다`() {
-        // 약국 18:33 도착, 18:35 종료. 주유소(18:34 종료)를 어느 순서로 넣어도 둘 중 하나는 닫힌다.
-        val tight = place("pharmacy", 0.03, category = PlaceCategory.PHARMACY, hours = hours(9, 18, 35))
+        // 약국 18:33 도착, 18:44 종료(18:34까지 도착). 주유소(18:43 종료)를 어느 순서로 넣어도 둘 중 하나는 못 들른다.
+        val tight = place("pharmacy", 0.03, category = PlaceCategory.PHARMACY, hours = hours(9, 18, 44))
         val tightPlan = optimizer.optimize(route(request("p", tight), request("m", mart)))
         assertEquals(2, tightPlan.stops.size)
-        val conflicting = gas("g", 0.02, 0.01, hours = hours(9, 18, 34))
+        val conflicting = gas("g", 0.02, 0.01, hours = hours(9, 18, 43))
         val t = task("t", Severity.RECOMMEND)
         assertTrue(engine.suggest(tightPlan, listOf(t)) { listOf(conflicting) }.isEmpty())
         assertNull(engine.evaluate(tightPlan, t, conflicting)) // 기존 볼일을 지키고 해결지를 뺀다
@@ -171,7 +171,7 @@ class PlanMergerTest {
 
     @Test
     fun `긴급 해결지 때문에 빠지는 볼일은 displaced로 알려 준다`() {
-        val tight = place("pharmacy", 0.03, category = PlaceCategory.PHARMACY, hours = hours(9, 18, 35))
+        val tight = place("pharmacy", 0.03, category = PlaceCategory.PHARMACY, hours = hours(9, 18, 44))
         val tightPlan = optimizer.optimize(route(request("p", tight), request("m", mart)))
         val urgent = task("u", Severity.URGENT, CarTaskKind.LowRange)
         val s = engine.suggest(tightPlan, listOf(urgent)) { listOf(gas("g", 0.02, 0.03)) }.single()

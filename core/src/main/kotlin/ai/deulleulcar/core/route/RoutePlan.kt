@@ -30,12 +30,12 @@ data class RouteRequest(
 /**
  * @property maxStops 완전 탐색 정류지 상한. 넘는 볼일은 [ExclusionReason.TOO_MANY_STOPS]로 제외.
  * @property maxCandidatesPerRequest 볼일마다 검토할 후보 수 상한(조합 폭발 방지). 직행 경로 기준 우회가 작은 순.
- * @property closingMargin 영업 종료 이만큼 전까지는 도착해야 들를 수 있다고 본다. 기본 0(도착 시각에 영업 중이면 됨).
+ * @property closingMargin 영업 종료 이만큼 전까지는 도착해야 들를 수 있다고 본다. 기본 10분(마감 직전 도착은 실사용 가치가 없음).
  */
 data class RouteOptions(
     val maxStops: Int = 5,
     val maxCandidatesPerRequest: Int = 3,
-    val closingMargin: Duration = Duration.ZERO,
+    val closingMargin: Duration = Duration.ofMinutes(10),
 ) {
     init {
         require(maxStops in 1..MAX_SEARCH_STOPS) { "정류지 상한은 1..$MAX_SEARCH_STOPS" }

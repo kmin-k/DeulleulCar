@@ -1,6 +1,7 @@
 package ai.deulleulcar.core.route
 
 import ai.deulleulcar.core.model.PlaceCategory
+import ai.deulleulcar.core.plan.GridEstimator
 import ai.deulleulcar.core.route.Fixtures.destination
 import ai.deulleulcar.core.route.Fixtures.evening
 import ai.deulleulcar.core.route.Fixtures.hours
@@ -34,18 +35,18 @@ class RouteOptimizerTest {
 
     @Test
     fun `영업 종료가 임박한 정류지를 앞으로 당기고 이유를 남긴다`() {
-        // 마트 먼저 가면 약국 도착이 18:51쯤 → 18:50 종료라 못 들름. 약국 먼저면 18:46쯤 도착.
+        // 19:00 종료, 마감 10분 전(18:50)까지 도착해야 함. 마트 먼저면 약국 18:51쯤, 약국 먼저면 18:46쯤.
         val mart = place("mart", 0.02, category = PlaceCategory.MART, hours = hours(10, 23))
-        val pharmacy = place("pharmacy", 0.06, category = PlaceCategory.PHARMACY, hours = hours(9, 18, 50))
+        val pharmacy = place("pharmacy", 0.06, category = PlaceCategory.PHARMACY, hours = hours(9, 19))
         val plan = optimizer.optimize(route(request("m", mart), request("p", pharmacy)))
 
         assertEquals(listOf("pharmacy", "mart"), ids(plan))
         val reason = assertIs<ReorderReason.ClosesSoon>(plan.reorderReasons.single())
         assertEquals("pharmacy", reason.placeId)
-        assertEquals(evening.toLocalDate().atTime(18, 50), reason.closingTime)
-        assertEquals("약국이 6시 50분에 닫아서 먼저 갈게요.", RouteSpeech.reorderReason(reason))
+        assertEquals(evening.toLocalDate().atTime(19, 0), reason.closingTime)
+        assertEquals("약국이 7시에 닫아서 먼저 갈게요.", RouteSpeech.reorderReason(reason))
         assertTrue(plan.stops.first().arrival.toLocalTime() < LocalTime.of(18, 50))
-        assertEquals(evening.toLocalDate().atTime(18, 50), plan.stops.first().closesAt)
+        assertEquals(evening.toLocalDate().atTime(19, 0), plan.stops.first().closesAt)
     }
 
     @Test
@@ -116,9 +117,9 @@ class RouteOptimizerTest {
 
     @Test
     fun `함께 들를 수 없는 볼일은 하나를 빼고 CONFLICT로 알린다`() {
-        // 둘 다 18:45 종료. 하나는 앞쪽, 하나는 출발지 뒤쪽이라 둘 다 시간 안에 못 감.
-        val ahead = place("ahead", 0.04, hours = hours(9, 18, 45))
-        val behind = place("behind", -0.04, hours = hours(9, 18, 45))
+        // 둘 다 18:55 종료(18:45까지 도착). 하나는 앞쪽, 하나는 출발지 뒤쪽이라 둘 다 시간 안에 못 감.
+        val ahead = place("ahead", 0.04, hours = hours(9, 18, 55))
+        val behind = place("behind", -0.04, hours = hours(9, 18, 55))
         val plan = optimizer.optimize(route(request("ahead", ahead), request("behind", behind)))
         assertEquals(listOf("ahead"), ids(plan)) // 경로 앞쪽이 총 소요가 작다
         assertEquals(ExclusionReason.CONFLICT, plan.excluded.single().reason)
@@ -160,5 +161,41 @@ class RouteOptimizerTest {
         assertEquals(categories, plan.stops.map { it.stop.place.category }) // 동쪽으로 가며 차례대로
         assertTrue(plan.stops.all { it.stop.place.id.endsWith("-2") }) // 경로 축 위(y=0) 후보
         assertTrue(elapsedMs < 1_000, "5곳 최적화 ${elapsedMs}ms")
+    }
+
+    @Test
+    fun `마감 10분 전까지 도착하면 들르고, 9분 전이면 제외한다`() {
+        // 격자 추정기: 약국까지 정확히 3분 → 18:33 도착
+        val grid = RouteOptimizer(GridEstimator)
+        val ok = place("ok", 0.03, category = PlaceCategory.PHARMACY, hours = hours(9, 18, 43)) // 10분 전
+        assertEquals(listOf("ok"), ids(grid.optimize(route(request("p", ok)))))
+
+        val late = place("late", 0.03, category = PlaceCategory.PHARMACY, hours = hours(9, 18, 42)) // 9분 전
+        val plan = grid.optimize(route(request("p", late)))
+        assertTrue(plan.stops.isEmpty())
+        assertEquals(ExclusionReason.CLOSED, plan.excluded.single().reason)
+
+        // 여유 0분으로 바꾸면 같은 곳도 들른다
+        val noMargin = RouteOptimizer(GridEstimator, RouteOptions(closingMargin = Duration.ZERO))
+        assertEquals(listOf("late"), ids(noMargin.optimize(route(request("p", late)))))
+    }
+
+    @Test
+    fun `마감 여유 때문에 순서가 바뀐다`() {
+        // 격자 추정기 + 체류 8분. 약국 18:50 종료 → 18:40까지 도착해야 함.
+        // 마트 먼저: 약국 18:31 + 8 + 2 = 18:41 (여유 0분이면 허용, 10분이면 불가). 약국 먼저: 18:33.
+        val dwell8 = object : TravelTimeEstimator by GridEstimator {
+            override fun dwellTime(place: ai.deulleulcar.core.model.Place) = Duration.ofMinutes(8)
+        }
+        val mart = place("mart", 0.01, category = PlaceCategory.MART)
+        val pharmacy = place("pharmacy", 0.03, category = PlaceCategory.PHARMACY, hours = hours(9, 18, 50))
+        val req = route(request("m", mart), request("p", pharmacy))
+
+        val noMargin = RouteOptimizer(dwell8, RouteOptions(closingMargin = Duration.ZERO)).optimize(req)
+        assertEquals(listOf("mart", "pharmacy"), ids(noMargin))
+
+        val plan = RouteOptimizer(dwell8).optimize(req)
+        assertEquals(listOf("pharmacy", "mart"), ids(plan))
+        assertIs<ReorderReason.ClosesSoon>(plan.reorderReasons.single())
     }
 }
