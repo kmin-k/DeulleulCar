@@ -1,0 +1,27 @@
+{
+  "note": "데모 구역(가상 상호) 큐레이션 영업시간. 시나리오 1: 평일 18:40 출발 기준 약국(19:00)이 마트(22:00)보다 먼저 닫는다.",
+  "entries": [
+    { "id": "demo-pharmacy-1", "name": "역삼 행복약국", "hours": { "weekdays": ["09:00-19:00"], "sat": ["09:00-14:00"] } },
+    { "id": "demo-pharmacy-2", "name": "선릉 미소약국", "hours": { "weekdays": ["09:00-19:30"], "sat": ["09:00-15:00"] } },
+    { "id": "demo-pharmacy-3", "name": "대치 늘봄약국", "hours": { "weekdays": ["09:30-19:00"], "sat": ["09:30-14:00"] } },
+
+    { "id": "demo-mart-1", "name": "선릉 생활마트", "hours": { "everyday": ["10:00-22:00"] } },
+    { "id": "demo-mart-2", "name": "대치 알뜰마트", "hours": { "everyday": ["09:00-23:00"] } },
+    { "id": "demo-mart-3", "name": "역삼 생활용품점", "hours": { "everyday": ["10:00-21:00"] } },
+
+    { "id": "demo-laundry-1", "name": "역삼 깔끔세탁", "hours": { "weekdays": ["08:00-20:00"], "sat": ["09:00-17:00"] } },
+    { "id": "demo-laundry-2", "name": "대치 하얀세탁", "hours": { "weekdays": ["08:30-20:30"], "sat": ["09:00-15:00"] } },
+
+    { "id": "demo-convenience-1", "name": "선릉 편의점", "hours": { "everyday": ["00:00-24:00"] } },
+
+    { "id": "demo-bank-1", "name": "데모은행 선릉지점", "hours": { "weekdays": ["09:00-16:00"] } },
+
+    { "id": "demo-gas-1", "name": "역삼 셀프주유소", "hours": { "everyday": ["06:00-24:00"] } },
+    { "id": "demo-gas-2", "name": "선릉 주유소", "hours": { "everyday": ["00:00-24:00"] } },
+
+    { "id": "demo-repair-1", "name": "역삼 자동차정비", "hours": { "weekdays": ["09:00-19:00"], "sat": ["09:00-15:00"] } },
+    { "id": "demo-tire-1", "name": "대치 타이어", "hours": { "weekdays": ["09:00-19:00"], "sat": ["09:00-17:00"] } },
+
+    { "id": "demo-ev-1", "name": "선릉 전기차충전소", "hours": { "everyday": ["00:00-24:00"] } }
+  ]
+}
