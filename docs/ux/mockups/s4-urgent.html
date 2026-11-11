@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>S4 긴급 알림</title><link rel="stylesheet" href="common.css">
+<style>
+  .alert { flex: 1; background: linear-gradient(135deg, rgba(255,90,95,.22), rgba(255,90,95,.06)); border: 2px solid var(--urgent); border-radius: 32px; padding: 40px 48px; display: flex; gap: 48px; align-items: center; }
+  .alert .icon { width: 160px; height: 160px; border-radius: 40px; background: var(--urgent); display: grid; place-items: center; flex: none; font-size: 88px; color: #2A0506; font-weight: 900; }
+  .alert .txt { flex: 1; }
+  .alert .head { font-size: 56px; font-weight: 800; letter-spacing: -0.03em; }
+  .alert .l { font-size: 32px; color: var(--text); margin-top: 18px; line-height: 1.45; }
+  .alert .l span { color: var(--sub); }
+  .alert .btns { display: flex; flex-direction: column; gap: 18px; width: 420px; flex: none; }
+  .alert .btns .btn { width: 100%; height: 112px; font-size: 34px; }
+</style></head>
+<body><div class="screen">
+  <div class="status">
+    <span class="logo">들를<b>Car</b></span><span class="chip drive">주행 중</span>
+    <span class="spacer"></span><span class="badge urgent">긴급</span><span>18:52</span>
+  </div>
+  <div class="body">
+    <div class="alert">
+      <div class="icon">⛽</div>
+      <div class="txt">
+        <div class="head">연료가 25km 정도 남았어요</div>
+        <div class="l">경로상 <b>2km 앞 선릉 주유소</b> · 1,689원/L<br><span>지금 들르면 집 도착이 4분 늦어져요</span></div>
+      </div>
+      <div class="btns"><button class="btn danger">들를래요</button><button class="btn ghost">10분 뒤 다시</button></div>
+    </div>
+  </div>
+</div></body></html>

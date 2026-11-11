@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>S2 계획 확인</title><link rel="stylesheet" href="common.css">
+<style>
+  .plan { flex: 1.5; }
+  .side { flex: 1; justify-content: space-between; }
+  .timeline { display: flex; flex-direction: column; gap: 12px; }
+  .row.suggest .idx { color: var(--recommend); }
+  .actions { display: flex; gap: 12px; flex: none; }
+  .actions .btn { height: 72px; font-size: 24px; padding: 0 26px; border-radius: 18px; }
+  .actions .btn.add { background: var(--recommend); color: #2B1B00; }
+  .sum { font-size: 26px; line-height: 1.5; }
+  .sum .big { font-size: 64px; font-weight: 800; color: var(--text); letter-spacing: -0.03em; }
+  .sum .big small { font-size: 32px; color: var(--sub); font-weight: 600; margin-left: 8px; }
+  .tts { background: var(--bg); border-radius: 20px; padding: 22px 24px; font-size: 24px; line-height: 1.5; color: var(--text); }
+  .tts .who { color: var(--brand); font-weight: 700; font-size: 20px; display: block; margin-bottom: 6px; }
+  .go { display: flex; gap: 16px; }
+  .go .btn { flex: 1; }
+</style></head>
+<body><div class="screen">
+  <div class="status">
+    <span class="logo">들를<b>Car</b></span><span class="chip">정차 중</span>
+    <span class="spacer"></span><span>"퇴근길에 약국이랑 마트 들렀다 집에 가자"</span><span>18:41</span>
+  </div>
+  <div class="body">
+    <section class="panel plan">
+      <h2>이렇게 들를게요</h2>
+      <div class="timeline">
+        <div class="row"><span class="idx">1</span>
+          <div class="main"><div class="title">역삼 행복약국</div><div class="meta">19:00에 닫아서 먼저 들러요</div></div>
+          <div class="right">도착<br><b>18:52</b></div></div>
+        <div class="row suggest"><span class="idx">+</span>
+          <div class="main"><div class="title">역삼 셀프주유소 · 공기주입기</div><div class="meta"><span class="badge recommend" style="margin-right:10px">차의 할 일</span>왼쪽 앞 타이어 공기압 보충</div></div>
+          <div class="actions"><button class="btn add">들를래요 +3분</button><button class="btn ghost">다음에</button></div></div>
+        <div class="row"><span class="idx">2</span>
+          <div class="main"><div class="title">선릉 생활마트</div><div class="meta">22:00까지 영업</div></div>
+          <div class="right">도착<br><b>19:08</b></div></div>
+        <div class="row"><span class="idx">🏠</span>
+          <div class="main"><div class="title">집</div><div class="meta">최종 목적지</div></div>
+          <div class="right">도착<br><b>19:31</b></div></div>
+      </div>
+    </section>
+    <section class="panel side">
+      <div class="sum"><span class="label">평소보다</span><div class="big">+9분<small>볼일 2곳</small></div>
+        <span class="muted">공기압까지 넣으면 +12분</span></div>
+      <div class="tts"><span class="who">🔊 들를Car</span>약국이 7시에 닫아서 먼저 갈게요. 가는 길에 타이어 공기압도 채울 수 있어요. 3분 더 걸려요. 들를까요?</div>
+      <div class="go"><button class="btn primary">출발</button><button class="btn ghost">수정</button></div>
+    </section>
+  </div>
+</div></body></html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>S5 할 일 상세</title><link rel="stylesheet" href="common.css">
+<style>
+  .explain { flex: 1.25; }
+  .places { flex: 1; }
+  .q { display: grid; grid-template-columns: 220px 1fr; gap: 10px 24px; font-size: 26px; line-height: 1.45; }
+  .q dt { color: var(--sub); font-size: 23px; padding-top: 3px; }
+  .q dd b { color: var(--recommend); }
+  .head { display: flex; align-items: center; gap: 16px; font-size: 36px; font-weight: 800; }
+  .src { font-size: 19px; color: var(--sub); margin-top: auto; }
+</style></head>
+<body><div class="screen">
+  <div class="status">
+    <span class="logo">들를<b>Car</b></span><span class="chip">정차 중</span>
+    <span class="spacer"></span><span>차의 할 일</span><span>08:51</span>
+  </div>
+  <div class="body">
+    <section class="panel explain">
+      <div class="head"><span class="badge recommend">권장</span>왼쪽 앞 타이어 공기압 낮음</div>
+      <dl class="q">
+        <dt>무슨 뜻이에요?</dt><dd>타이어 공기가 적정보다 적어요. 추워지면 자연스럽게 빠지기도 해요.</dd>
+        <dt>지금 위험해요?</dt><dd>당장은 아니에요. 다만 오래 두면 연비가 떨어지고 고속 주행 때 위험해져요.</dd>
+        <dt>언제까지?</dt><dd><b>오늘 안에</b> 채우는 걸 권해요.</dd>
+        <dt>어떻게 해결해요?</dt><dd>주유소·휴게소 공기주입기로 5분이면 돼요. 무료인 곳이 많아요.</dd>
+      </dl>
+      <div class="src">감지: 차량 타이어 센서 · 3시간 전</div>
+    </section>
+    <section class="panel places">
+      <h2>해결할 수 있는 곳</h2>
+      <div class="row"><div class="main"><div class="title">역삼 셀프주유소</div><div class="meta">퇴근 경로상 · 공기주입기</div></div><div class="right"><b>+3분</b></div></div>
+      <div class="row"><div class="main"><div class="title">역삼 자동차정비</div><div class="meta">점검까지 함께 · 19:00 마감</div></div><div class="right"><b>+11분</b></div></div>
+      <div style="display:flex;gap:16px;margin-top:auto"><button class="btn primary" style="flex:1">퇴근길에 넣어 두기</button><button class="btn ghost">나중에</button></div>
+    </section>
+  </div>
+</div></body></html>

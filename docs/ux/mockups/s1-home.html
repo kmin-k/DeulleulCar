@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>S1 홈</title><link rel="stylesheet" href="common.css">
+<style>
+  .left { flex: 1.15; }
+  .right { flex: 1; }
+  .ask { margin-top: auto; display: flex; align-items: center; gap: 28px; padding: 24px 28px; background: var(--bg); border-radius: 24px; }
+  .ask .hint { font-size: 24px; color: var(--sub); line-height: 1.45; }
+  .ask .hint b { color: var(--text); font-size: 30px; display: block; margin-bottom: 4px; }
+  .car { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+  .car .top { display: flex; align-items: center; gap: 14px; }
+  .car .desc { font-size: 22px; color: var(--sub); line-height: 1.4; }
+  .car .fix { display: flex; align-items: center; justify-content: space-between; font-size: 22px; margin-top: 4px; }
+  .car .fix b { color: var(--recommend); }
+</style></head>
+<body><div class="screen">
+  <div class="status">
+    <span class="logo">들를<b>Car</b></span><span class="chip">정차 중</span>
+    <span class="spacer"></span><span>회사 → 집</span><span>18:40</span>
+  </div>
+  <div class="body">
+    <section class="panel left">
+      <h2>오늘 들를 곳 <span class="count">2</span></h2>
+      <div class="row"><span class="idx">1</span>
+        <div class="main"><div class="title">역삼 행복약국</div><div class="meta">19:00 영업 종료 · 경로상 1.2km</div></div>
+        <div class="right">도착<br><b>18:52</b></div></div>
+      <div class="row"><span class="idx">2</span>
+        <div class="main"><div class="title">선릉 생활마트</div><div class="meta">22:00 영업 종료 · 경로상 3.4km</div></div>
+        <div class="right">도착<br><b>19:08</b></div></div>
+      <div class="ask">
+        <div class="mic"><svg viewBox="0 0 24 24" fill="#06210F"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.93V21h2v-2.07A7 7 0 0 0 19 12h-2Z"/></svg></div>
+        <div class="hint"><b>"가는 길에 ○○ 들러"</b>여러 곳을 한 번에 말해도 순서는 알아서 짜 드려요.</div>
+      </div>
+    </section>
+    <section class="panel right">
+      <h2>차의 할 일 <span class="count">2</span></h2>
+      <div class="row car">
+        <div class="top"><span class="badge recommend">권장</span><span class="title" style="font-weight:700">왼쪽 앞 타이어 공기압 낮음</span></div>
+        <div class="desc">당장 위험하진 않지만 오늘 안에 채우는 게 좋아요. 아침보다 4psi 낮아졌어요.</div>
+        <div class="fix"><span class="muted">가장 빠른 해결 · 역삼 셀프주유소 공기주입기</span><b>경로상 +3분</b></div>
+      </div>
+      <div class="row car">
+        <div class="top"><span class="badge hold">보류</span><span class="title" style="font-weight:700">워셔액 부족</span></div>
+        <div class="desc">급하지 않아요. 주유소나 마트에 들를 때 함께 챙기면 돼요.</div>
+        <div class="fix"><span class="muted">경로 근처에 기회가 생기면 알려 드릴게요</span><span class="muted">대기 중</span></div>
+      </div>
+    </section>
+  </div>
+</div></body></html>
