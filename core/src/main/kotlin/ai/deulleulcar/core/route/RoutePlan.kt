@@ -92,6 +92,7 @@ data class ExcludedRequest(val request: StopRequest, val reason: ExclusionReason
  * @property driveTime 정류지를 거치는 총 운전 시간
  * @property dwellTime 정류지 체류 시간 합
  * @property directDriveTime 출발지 → 목적지 직행 운전 시간(기준 경로)
+ * @property pinnedFirstRequestId 첫 정류지로 고정된 볼일(계획에 들어간 경우만). 다시 최적화할 때 그대로 넘긴다.
  */
 data class RoutePlan(
     val origin: GeoPoint,
@@ -104,10 +105,14 @@ data class RoutePlan(
     val directDriveTime: Duration,
     val reorderReasons: List<ReorderReason> = emptyList(),
     val excluded: List<ExcludedRequest> = emptyList(),
+    val pinnedFirstRequestId: String? = null,
 ) {
     val totalTime: Duration get() = driveTime.plus(dwellTime)
 
     val orderedStops: List<Stop> get() = stops.map { it.stop }
+
+    /** 이 계획의 정류지를 장소가 정해진 볼일로 되돌린다(정류지를 더해 다시 최적화할 때). */
+    fun asRequests(): List<StopRequest> = stops.map { StopRequest.of(it.stop, it.requestId) }
 
     /** 직행 대비 늘어난 운전 시간(분, 반올림). 내비 화면·TTS의 "경로상 +N분"은 이 값을 쓴다. */
     val extraDriveMinutes: Int get() = roundMinutes(driveTime.minus(directDriveTime))

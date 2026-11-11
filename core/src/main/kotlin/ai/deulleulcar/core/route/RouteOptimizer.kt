@@ -133,6 +133,7 @@ class RouteOptimizer(
             directDriveTime = Duration.ofSeconds(graph.travelToDest(Graph.ORIGIN)),
             reorderReasons = reasons,
             excluded = excluded,
+            pinnedFirstRequestId = request.pinnedFirstRequestId?.takeIf { id -> stops.firstOrNull()?.requestId == id },
         )
     }
 
