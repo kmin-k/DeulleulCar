@@ -48,6 +48,16 @@ object CarTaskCatalog {
             CarTaskInfo("핸들 보조 장치에 이상이 있어 핸들이 무거워질 수 있어요", "천천히 달려서 점검을 받는", repair)
         TelltaleType.H2_LEAK ->
             CarTaskInfo("수소 누출이 감지됐어요", "안전한 곳에 세우고 긴급 연락을 하는", repair, stopFirst = true)
+        TelltaleType.BRAKE_FLUID_LOW ->
+            CarTaskInfo("브레이크액이 부족해요", "안전한 곳에 세우고 정비소에서 점검을 받는", repair, stopFirst = true)
+        TelltaleType.LOW_FUEL ->
+            CarTaskInfo("연료가 얼마 남지 않았어요", "주유를 하는", listOf(PlaceCategory.GAS_STATION))
+        TelltaleType.LOW_EV_BATTERY ->
+            CarTaskInfo("배터리가 얼마 남지 않았어요", "충전을 하는", listOf(PlaceCategory.EV_CHARGING))
+        TelltaleType.ENGINE_OIL_LOW ->
+            CarTaskInfo("엔진오일이 부족해요", "엔진오일을 보충하거나 교환하는", repair)
+        TelltaleType.WASHER_FLUID_LOW ->
+            CarTaskInfo("워셔액이 부족해요", "워셔액을 채우는", listOf(PlaceCategory.GAS_STATION, PlaceCategory.REPAIR_SHOP))
         TelltaleType.TPMS ->
             CarTaskInfo(
                 "타이어 공기압이 낮아요", "공기압을 채우는",

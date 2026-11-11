@@ -3,12 +3,16 @@ package ai.deulleulcar.app.vehicle
 import ai.deulleulcar.app.sdk.FeatureState
 import ai.deulleulcar.core.model.CarSignal
 import ai.deulleulcar.core.model.TelltaleState
+import ai.deulleulcar.core.model.TelltaleType
 import ai.pleos.playground.vehicle.Vehicle
 import ai.pleos.playground.vehicle.api.model.telltale.Telltales
 import ai.pleos.playground.vehicle.constant.ErrorCode
 import ai.pleos.playground.vehicle.constant.control.VehicleGear
 import ai.pleos.playground.vehicle.listener.DistanceDrivenListener
+import ai.pleos.playground.vehicle.constant.control.OilLevelState
 import ai.pleos.playground.vehicle.listener.GearSelectionListener
+import ai.pleos.playground.vehicle.listener.LowWasherFluidWaringListener
+import ai.pleos.playground.vehicle.listener.OilLevelStateListener
 import ai.pleos.playground.vehicle.listener.RangeRemainingListener
 import ai.pleos.playground.vehicle.listener.TelltaleInfoListener
 import android.content.Context
@@ -34,6 +38,9 @@ import ai.pleos.playground.vehicle.constant.telltale.TelltaleType as SdkTelltale
  * - 주행 가능 거리: `Odometer.getRangeRemainingDistance` + `registerRangeRemainingListener` (CAR_DRIVE, capability 확인 API 없음, 값은 미터)
  * - 기어: `Gear.getCurrentGearSelectionState` + `registerGearSelection` (CAR_DRIVE, capability 확인 API 없음)
  * - 누적 주행거리: `Odometer.checkCurrentDistanceDrivenCapabilities` → `registerDistanceDriven` + `getCurrentDistanceDriven`
+ * - 브레이크액·엔진오일: `Safety.check{BrakeFluid,EngineOil}LevelStateCapabilities` → `register...LevelState(OilLevelStateListener)`
+ *   (LOW/CRITICALLY_LOW = 부족 → [TelltaleType.BRAKE_FLUID_LOW]/[TelltaleType.ENGINE_OIL_LOW] ON, NORMAL/HIGH = OFF)
+ * - 워셔액: `Safety.checkLowWasherFluidWarningStateCapabilities` → `registerLowWasherFluidWaringState` (true = [TelltaleType.WASHER_FLUID_LOW] ON)
  *
  * 모든 호출은 비동기 IPC다. 콜백은 SDK 스레드에서 올 수 있으므로 상태는 [lock]으로 보호하고,
  * [stop] 뒤 늦게 도착한 콜백은 세대 번호([generation])로 걸러 낸다.
@@ -62,6 +69,7 @@ class PleosVehicleSignalSource(context: Context) : VehicleSignalSource {
     private val lastTelltales = mutableMapOf<SdkTelltaleType, TelltaleState>()
     private var lastRange: Double? = null
     private var lastOdometer: Double? = null
+    private val lastLevels = mutableMapOf<TelltaleType, Boolean>()
 
     override fun start() {
         synchronized(lock) {
@@ -78,6 +86,7 @@ class PleosVehicleSignalSource(context: Context) : VehicleSignalSource {
             lastTelltales.clear()
             lastRange = null
             lastOdometer = null
+            lastLevels.clear()
             _features.value = VehicleFeature.entries.associateWith { FeatureState.UNKNOWN }
             Log.i(TAG, "Vehicle initialize (gen=$generation)")
         }
@@ -87,6 +96,9 @@ class PleosVehicleSignalSource(context: Context) : VehicleSignalSource {
         subscribeRange(v, gen, 0)
         subscribeGear(v, gen, 0)
         subscribeOdometer(v, gen, 0)
+        subscribeBrakeFluid(v, gen, 0)
+        subscribeEngineOil(v, gen, 0)
+        subscribeWasherFluid(v, gen, 0)
     }
 
     override fun stop() {
@@ -198,6 +210,74 @@ class PleosVehicleSignalSource(context: Context) : VehicleSignalSource {
         }
     }
 
+    private fun oilListener(feature: VehicleFeature, type: TelltaleType, gen: Int) = object : OilLevelStateListener {
+        override fun onOilLevelUpdated(level: OilLevelState?) {
+            if (isCurrent(gen)) onLevel(type, isLow(level))
+        }
+
+        override fun onFailed(e: Exception) = onListenerFailed(feature, gen, e)
+    }
+
+    private fun subscribeBrakeFluid(v: Vehicle, gen: Int, attempt: Int) {
+        val safety = v.getSafety()
+        val feature = VehicleFeature.BRAKE_FLUID
+        call(feature, gen, attempt, { subscribeBrakeFluid(v, gen, it) }) { done, fail ->
+            safety.checkBrakeFluidLevelStateCapabilities({ cfg, states ->
+                done()
+                Log.i(TAG, "$feature capability: $cfg $states")
+                val listener = oilListener(feature, TelltaleType.BRAKE_FLUID_LOW, gen)
+                if (register(gen, { safety.registerBrakeFluidLevelState(listener) }, { safety.unregisterBrakeFluidLevelState(listener) })) {
+                    markActive(feature)
+                    getOnce(gen) { ok, err ->
+                        safety.getBrakeFluidLevelState({ if (isCurrent(gen)) onLevel(TelltaleType.BRAKE_FLUID_LOW, isLow(it)); ok() }, err)
+                    }
+                }
+            }, fail)
+        }
+    }
+
+    private fun subscribeEngineOil(v: Vehicle, gen: Int, attempt: Int) {
+        val safety = v.getSafety()
+        val feature = VehicleFeature.ENGINE_OIL
+        call(feature, gen, attempt, { subscribeEngineOil(v, gen, it) }) { done, fail ->
+            safety.checkEngineOilLevelStateCapabilities({ cfg, states ->
+                done()
+                Log.i(TAG, "$feature capability: $cfg $states")
+                val listener = oilListener(feature, TelltaleType.ENGINE_OIL_LOW, gen)
+                if (register(gen, { safety.registerEngineOilLevelState(listener) }, { safety.unregisterEngineOilLevelState(listener) })) {
+                    markActive(feature)
+                    getOnce(gen) { ok, err ->
+                        safety.getEngineOilLevelState({ if (isCurrent(gen)) onLevel(TelltaleType.ENGINE_OIL_LOW, isLow(it)); ok() }, err)
+                    }
+                }
+            }, fail)
+        }
+    }
+
+    private fun subscribeWasherFluid(v: Vehicle, gen: Int, attempt: Int) {
+        val safety = v.getSafety()
+        val feature = VehicleFeature.WASHER_FLUID
+        call(feature, gen, attempt, { subscribeWasherFluid(v, gen, it) }) { done, fail ->
+            safety.checkLowWasherFluidWarningStateCapabilities({ cfg ->
+                done()
+                Log.i(TAG, "$feature capability: $cfg")
+                val listener = object : LowWasherFluidWaringListener {
+                    override fun onLowWasherFluidWaringUpdated(value: Boolean?) {
+                        if (isCurrent(gen)) onLevel(TelltaleType.WASHER_FLUID_LOW, value)
+                    }
+
+                    override fun onFailed(e: Exception) = onListenerFailed(feature, gen, e)
+                }
+                if (register(gen, { safety.registerLowWasherFluidWaringState(listener) }, { safety.unregisterLowWasherFluidWaringState(listener) })) {
+                    markActive(feature)
+                    getOnce(gen) { ok, err ->
+                        safety.hasLowWasherFluidWarning({ if (isCurrent(gen)) onLevel(TelltaleType.WASHER_FLUID_LOW, it); ok() }, err)
+                    }
+                }
+            }, fail)
+        }
+    }
+
     // ---- 값 처리 ----
 
     private fun onTelltales(telltales: Telltales) {
@@ -235,6 +315,20 @@ class PleosVehicleSignalSource(context: Context) : VehicleSignalSource {
         val km = value?.toDouble() ?: return
         val changed = synchronized(lock) { (lastOdometer != km).also { lastOdometer = km } }
         if (changed) emit(CarSignal.Odometer(km))
+    }
+
+    /** 부족(true)·정상(false)을 경고등처럼 ON/OFF로 내보낸다. 처음 정상은 내보내지 않는다. 모르면(null) 무시. */
+    private fun onLevel(type: TelltaleType, low: Boolean?) {
+        if (low == null) return
+        val before = synchronized(lock) { lastLevels.put(type, low) }
+        if (before == low || (before == null && !low)) return
+        emit(CarSignal.Telltale(type, if (low) TelltaleState.ON else TelltaleState.OFF))
+    }
+
+    private fun isLow(state: OilLevelState?): Boolean? = when (state) {
+        OilLevelState.LOW, OilLevelState.CRITICALLY_LOW -> true
+        OilLevelState.NORMAL, OilLevelState.HIGH -> false
+        else -> null
     }
 
     private fun emit(signal: CarSignal) {

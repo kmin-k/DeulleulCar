@@ -5,6 +5,7 @@ import ai.deulleulcar.core.model.CarTaskKind
 import ai.deulleulcar.core.model.CarTaskStatus
 import ai.deulleulcar.core.model.DriveState
 import ai.deulleulcar.core.model.Gear
+import ai.deulleulcar.core.model.PlaceCategory
 import ai.deulleulcar.core.model.Severity
 import ai.deulleulcar.core.model.TelltaleState
 import ai.deulleulcar.core.model.TelltaleType
@@ -243,5 +244,25 @@ class CarTaskClassifierTest {
         assertEquals(Severity.RECOMMEND, Severity.HOLD.raised())
         assertEquals(Severity.URGENT, Severity.RECOMMEND.raised())
         assertEquals(Severity.URGENT, Severity.URGENT.raised())
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "LOW_FUEL,RECOMMEND", "LOW_EV_BATTERY,RECOMMEND",
+        "BRAKE_FLUID_LOW,URGENT", "ENGINE_OIL_LOW,RECOMMEND", "WASHER_FLUID_LOW,HOLD",
+    )
+    fun `연료·배터리 경고등과 Safety 레벨 신호의 등급`(type: TelltaleType, expected: Severity) {
+        val created = assertIs<CarTaskUpdate.Created>(classifier.onSignal(on(type)))
+        assertEquals(expected, created.task.severity)
+        assertIs<CarTaskUpdate.Resolved>(classifier.onSignal(off(type)))
+    }
+
+    @Test
+    fun `연료·배터리·워셔액 해결 장소`() {
+        fun places(t: TelltaleType) = CarTaskCatalog.info(CarTaskKind.Warning(t)).fixPlaces
+        assertEquals(listOf(PlaceCategory.GAS_STATION), places(TelltaleType.LOW_FUEL))
+        assertEquals(listOf(PlaceCategory.EV_CHARGING), places(TelltaleType.LOW_EV_BATTERY))
+        assertEquals(PlaceCategory.GAS_STATION, places(TelltaleType.WASHER_FLUID_LOW).first())
+        assertTrue(CarTaskCatalog.info(CarTaskKind.Warning(TelltaleType.BRAKE_FLUID_LOW)).stopFirst)
     }
 }

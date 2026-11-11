@@ -15,6 +15,7 @@
 | MDPS | 핸들 보조 장치에 이상이 있어요 (핸들이 무거워질 수 있음) | 저속 주행, 점검 |
 | H2 Leak | 수소 누출이 감지됐어요 | 즉시 정차, 긴급 연락 |
 | (Energy) 주행 가능 거리 < 30km | 연료·배터리가 거의 없어요 | 가장 가까운 주유·충전 |
+| (Safety) 브레이크액 부족 (`registerBrakeFluidLevelState` LOW/CRITICALLY_LOW) | 브레이크액이 부족해요 | 안전한 곳에 세우고 정비소 점검 |
 
 ## 🟠 권장 — 오늘~며칠 안에 (경로 편성 때 강하게 추천)
 | Telltale | 의미 | 해결 장소 카테고리 |
@@ -31,6 +32,9 @@
 | H2 Sensor | 수소 센서 점검이 필요해요 | 정비소 |
 | Master Warning | 확인이 필요한 경고가 있어요 | 차량 화면 확인 후 정비소 |
 | (Energy) 주행 가능 거리 < 80km | 연료·배터리가 부족해요 | 주유소·충전소 |
+| Low Fuel (SDK `LOW_FUEL`) | 연료가 얼마 남지 않았어요 | 주유소 |
+| Low EV Battery (SDK `LOW_EV_BATTERY`) | 배터리가 얼마 남지 않았어요 | 충전소 |
+| (Safety) 엔진오일 부족 (`registerEngineOilLevelState` LOW/CRITICALLY_LOW) | 엔진오일이 부족해요 | 정비소 (보충·교환) |
 
 ## ⚪ 보류 — 목록에 유지, 기회가 있을 때만
 | 신호 | 의미 | 해결 장소 |
@@ -39,6 +43,7 @@
 | LED Headlamp | LED 전조등에 이상이 있어요 | 정비소 |
 | Emergency Call | 긴급 호출 장치 점검이 필요해요 | 정비소 |
 | (Odometer) 정기 점검 주기 도달 | 정기 점검 시기예요 (예: 마지막 점검 후 10,000km) | 정비소 |
+| (Safety) 워셔액 부족 (`registerLowWasherFluidWaringState` true) | 워셔액이 부족해요 | 주유소, 정비소 |
 
 ## 무시 (상태 표시등 — 할 일 아님)
 Parking Brake, Seat Belt, Door Open, ESC Off, Auto Hold, Auto High Beam, Headlamp Low/High, Position Lamp, Front/Rear Fog Lamp, Passenger Airbag Off/On, Turn Signal Left/Right, Preheat, Immobilizer
@@ -46,3 +51,4 @@ Parking Brake, Seat Belt, Door Open, ESC Off, Auto Hold, Auto High Beam, Headlam
 ## spec 대비 변경
 - 브레이크액·워셔액 경고는 Telltales 목록에 없음 → 긴급 데모는 **Engine Oil Pressure / 주행 가능 거리**, 보류 데모는 **Odometer 정기 점검**으로 대체
 - 시연 추천 세트: 시나리오 3 = TPMS(권장), 시나리오 4 = Remaining Range 25km(긴급), 보류 = Odometer 점검 주기
+- (2026-11-12) Vehicle SDK 2.3.2에 Safety 레벨 API(브레이크액·엔진오일·워셔액)와 SDK 경고등 `LOW_FUEL`·`LOW_EV_BATTERY`가 있어 위 표에 추가. 레벨 신호는 경고등이 아니라 capability가 있을 때만 구독하며, 앱은 부족 = ON, 정상 = OFF로 바꿔 같은 분류기에 넣는다. Virtual Console 목록에는 없어 에뮬레이터에서 재현되지 않을 수 있음.

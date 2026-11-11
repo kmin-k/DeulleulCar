@@ -9,7 +9,12 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 /** 앱이 구독하는 차량 신호 묶음. */
-enum class VehicleFeature { TELLTALES, RANGE, GEAR, ODOMETER }
+enum class VehicleFeature {
+    TELLTALES, RANGE, GEAR, ODOMETER,
+
+    /** Safety 레벨 신호(경고등과 별도). capability가 있을 때만 구독. */
+    BRAKE_FLUID, ENGINE_OIL, WASHER_FLUID,
+}
 
 /**
  * 지금까지 받은 차량 상태의 최신값. UI가 처음 그릴 때 [VehicleSignalSource.signals]를 기다리지 않고 읽는다.
