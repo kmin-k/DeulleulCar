@@ -9,11 +9,11 @@ class SpeechWatchdogTest {
     private data class S(val text: String, val p: SpeechPriority = SpeechPriority.NORMAL)
 
     @Test
-    fun `추정 시간은 길이에 비례하고 3초에서 20초로 제한된다`() {
+    fun `추정 시간은 길이에 비례하고 6초에서 30초로 제한된다`() {
         val w = SpeechWatchdog()
-        assertEquals(3_000L, w.estimateMs("네"))
-        assertEquals(1_500L + 180L * 10, w.estimateMs("가".repeat(10)))
-        assertEquals(20_000L, w.estimateMs("가".repeat(500)))
+        assertEquals(6_000L, w.estimateMs("네"))
+        assertEquals(4_000L + 300L * 10, w.estimateMs("가".repeat(10)))
+        assertEquals(30_000L, w.estimateMs("가".repeat(500)))
     }
 
     @Test
@@ -70,5 +70,37 @@ class SpeechWatchdogTest {
         assertTrue(w.onTimeout(t2))
         assertEquals("u", q.onCurrentFinished()?.text)
         assertEquals("n", q.next()?.text)
+    }
+
+    @Test
+    fun `감시 타이머가 끝낸 A의 늦은 끝 신호는 다음 발화 B를 끝내지 않는다`() {
+        val w = SpeechWatchdog()
+        val a = w.begin()
+        assertTrue(w.onTimeout(a))
+        val b = w.begin()
+        assertFalse(w.onRealFinish()) // A의 늦은 onDone
+        assertTrue(w.onTimeout(b)) // B 감시는 그대로 유효
+    }
+
+    @Test
+    fun `B 시작 전에 온 늦은 끝 신호도 A의 것이고 B 자신의 끝 신호는 처리된다`() {
+        val w = SpeechWatchdog()
+        val a = w.begin()
+        assertTrue(w.onTimeout(a))
+        assertFalse(w.onRealFinish()) // B 시작 전 A의 늦은 신호
+        w.begin()
+        assertTrue(w.onRealFinish()) // B 자신의 신호
+        assertEquals(0, w.orphanedFinishes)
+    }
+
+    @Test
+    fun `감시 타이머가 두 번 연속 끝냈으면 늦은 신호도 두 번 삼킨다`() {
+        val w = SpeechWatchdog()
+        assertTrue(w.onTimeout(w.begin()))
+        assertTrue(w.onTimeout(w.begin()))
+        assertFalse(w.onRealFinish())
+        assertFalse(w.onRealFinish())
+        w.begin()
+        assertTrue(w.onRealFinish())
     }
 }
