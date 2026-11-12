@@ -29,6 +29,14 @@ android {
     buildFeatures {
         compose = true
     }
+
+    testOptions {
+        unitTests {
+            // android.util.Log 등은 JVM 테스트에서 기본값을 돌려준다
+            isReturnDefaultValues = true
+            all { it.useJUnitPlatform() }
+        }
+    }
 }
 
 dependencies {
@@ -50,4 +58,10 @@ dependencies {
     implementation(libs.pleos.tts)
     implementation(libs.pleos.fusedlocation)
     implementation(libs.pleos.fusedlocation.data)
+
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testImplementation(kotlin("test-junit5"))
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
