@@ -89,27 +89,33 @@
 > 의존성: Phase 1·2는 에뮬레이터 없이 진행할 수 있음 (Phase 2는 JDK만 필요). Phase 3부터는 T0 완료가 필요.
 
 ### Phase 0. 환경 (👤)
-- [ ] **T0** Android Studio 설치 → Pleos Connect Emulator 설치, AVD 생성, Virtual Console 설정 ([공식 가이드](https://document.pleos.ai/docs/connect/guide/getting-started/application-development/setup-connect-sdk-emulator)) — 검증: `adb devices`에 에뮬레이터가 보이고, Vehicle Sample App이 구동됨
-- [ ] **T0b** 키 발급: Gemini(AI Studio), 카카오 REST, 오피넷(선택) → `local.properties`에만 저장 — 검증: 키가 git에 추적되지 않음
+- [x] **T0** Android Studio 설치 → Pleos Connect Emulator 설치, AVD 생성, Virtual Console 설정 ([공식 가이드](https://document.pleos.ai/docs/connect/guide/getting-started/application-development/setup-connect-sdk-emulator)) — 검증: `adb devices`에 에뮬레이터가 보이고, Vehicle Sample App이 구동됨
+- [x] **T0b** 키 발급: Gemini(AI Studio), 카카오 REST, 오피넷(선택) → `local.properties`에만 저장 — 검증: 키가 git에 추적되지 않음
 
 ### Phase 1. 기획 근거 (🤖)
-- [ ] **T1** 리서치: 운전자 수·차량 등록 대수, 운전 중 볼일·경유 행태, 경고등 방치·타이어 공기압 관련 통계, 경쟁 서비스 비교 → `docs/research.md` — 검증: 모든 수치에 출처 URL
-- [ ] **T2** UX 설계: 시나리오 3개의 화면 흐름, 음성 대화 스크립트, 주행·정차 상태별 UI 규칙, 화면 시안(HTML 목업 → PNG) → `docs/ux/` — 검증: 시나리오 1~3을 모든 화면이 커버함
+- [x] **T1** 리서치: 운전자 수·차량 등록 대수, 운전 중 볼일·경유 행태, 경고등 방치·타이어 공기압 관련 통계, 경쟁 서비스 비교 → `docs/research.md` — 검증: 모든 수치에 출처 URL
+- [x] **T2** UX 설계: 시나리오 3개의 화면 흐름, 음성 대화 스크립트, 주행·정차 상태별 UI 규칙, 화면 시안(HTML 목업 → PNG) → `docs/ux/` — 검증: 시나리오 1~3을 모든 화면이 커버함
 
 ### Phase 2. 코어 로직 (🤖, 순수 Kotlin + JVM 테스트)
 - [x] **T3** 프로젝트 스캐폴드: Gradle KTS, `:core`(순수 Kotlin) / `:app`(Compose), Pleos SDK 의존성, `.gitignore`, 커밋 작성자 익명 설정 — 검증: `gradlew :core:test` 및 `assembleDebug` 성공
 - [x] **T4** 도메인 모델 + 차량 할 일 등급 분류기 (긴급 / 권장 / 보류) — 검증: 경고 유형별 등급 단위 테스트
 - [x] **T5** 볼일 파서 규칙 기반 fallback ("A랑 B 들러", "~가는 길에" 등) — 검증: 대표 발화 20개 테스트
-- [ ] **T6** `LlmClient` + Gemini 구현 (JSON 스키마 응답), 실패하면 fallback으로 전환 — 검증: fake 서버 테스트 + 실제 호출 1회 확인
-- [ ] **T7** 장소 검색(카카오 로컬) + `HoursProvider`(업종 기본값 + 큐레이션 JSON) — 검증: 응답 파싱 테스트, 영업 중 판정 테스트
-- [ ] **T8** 경로 순서 최적화: 정류지 5개 이하 완전 탐색, 이동시간 추정, 영업 종료 제약, "+N분" 계산 — 검증: 영업 종료가 임박한 곳이 앞으로 오는 케이스 등 테스트
-- [ ] **T9** 롤링 경유지 상태 머신 (최대 2개씩 투입, 도착 이벤트가 오면 다음 정류지) — 검증: 정류지 3~5개 시퀀스 테스트
-- [ ] **T10** 차량 할 일과 계획 병합: 경로 근처 해결 기회 탐지, 추천 문구와 +N분, **허락 전에는 계획에 반영하지 않음** — 검증: 거절이면 미반영, 수락이면 순서 재계산되는 테스트
+- [x] **T6** `LlmClient` + Gemini 구현 (JSON 스키마 응답), 실패하면 fallback으로 전환 — 검증: fake 서버 테스트 + 실제 호출 1회 확인
+- [x] **T7** 장소 검색(카카오 로컬) + `HoursProvider`(업종 기본값 + 큐레이션 JSON) — 검증: 응답 파싱 테스트, 영업 중 판정 테스트
+- [x] **T8** 경로 순서 최적화: 정류지 5개 이하 완전 탐색, 이동시간 추정, 영업 종료 제약, "+N분" 계산 — 검증: 영업 종료가 임박한 곳이 앞으로 오는 케이스 등 테스트
+- [x] **T9** 롤링 경유지 상태 머신 (최대 2개씩 투입, 도착 이벤트가 오면 다음 정류지) — 검증: 정류지 3~5개 시퀀스 테스트
+- [x] **T10** 차량 할 일과 계획 병합: 경로 근처 해결 기회 탐지, 추천 문구와 +N분, **허락 전에는 계획에 반영하지 않음** — 검증: 거절이면 미반영, 수락이면 순서 재계산되는 테스트
 
 ### Phase 3. SDK 연동 (🤖, T0 필요)
-- [ ] **T11** Vehicle 어댑터: telltales, 타이어, 연료, 엔진오일, 워셔액, 브레이크액 → 차량 할 일 이벤트 — 검증: Virtual Console에서 값을 바꾸면 앱 상태가 바뀜
+- [x] **T11** Vehicle 어댑터: telltales, 타이어, 연료, 엔진오일, 워셔액, 브레이크액 → 차량 할 일 이벤트 — 검증: Virtual Console에서 값을 바꾸면 앱 상태가 바뀜
 - [ ] **T12** STT(ON_DEVICE)·TTS 어댑터 — 검증: 에뮬레이터 마이크 발화가 텍스트로 변환되고 음성 응답이 출력됨
 - [ ] **T13** NaviHelper + FusedLocation 어댑터 (`requestRouteWithWaypoints`, `onWayPointArrived`, 근접 알림) — 검증: 경로 요청 성공 이벤트, 도착 이벤트 처리
+
+> 기기 검증 현황 (2026-11-12)
+> - T11 ✅ Virtual Console 값 변경(TPMS ON, 주행 가능 거리 25km, 기어 P↔D)이 앱 신호로 들어옴. 브레이크액·엔진오일·워셔액 레벨은 에뮬레이터 미지원(NOT_SUPPORTED) → 앱은 해당 기능만 끄고 정상 동작.
+> - T12 ◐ TTS 재생·긴급 끼어들기·대기열 진행 확인(에뮬레이터는 완료 콜백이 최대 16초 늦어 감시 타이머 추가). STT 실제 발화는 마지막 기기 검증 때 확인.
+> - T13 ◐ FusedLocation 수신, 경로 요청이 내비 앱까지 전달되는 것 확인. 에뮬레이터 내비 앱이 화면을 그리지 못해 응답·슬롯 동작은 미측정 → `SlotSyncStrategy.ReRequestRoute`(안전한 기본값) 유지.
+> - 에뮬레이터가 노트북에 무거워 기기 검증은 마지막에 한 번에 몰아서 한다.
 
 ### Phase 4. UI (🤖)
 - [ ] **T14** Compose UI: 홈(사람의 할 일 / 차의 할 일 카드), 계획 확인, 주행 중 미니 카드, 긴급 알림, 설정(API 키 입력) — 검증: 시나리오 1~3을 수동으로 완주
