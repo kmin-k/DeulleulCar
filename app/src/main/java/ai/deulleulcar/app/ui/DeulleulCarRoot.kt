@@ -1,7 +1,9 @@
 package ai.deulleulcar.app.ui
 
 import ai.deulleulcar.app.AppContainer
+import ai.deulleulcar.app.demo.DemoBar
 import ai.deulleulcar.app.demo.DemoPanel
+import ai.deulleulcar.app.voice.SpokenLine
 import ai.deulleulcar.app.flow.AppUiState
 import ai.deulleulcar.app.flow.Screen
 import ai.deulleulcar.app.ui.theme.DC
@@ -54,6 +56,9 @@ fun DeulleulCarRoot(container: AppContainer, onDemoMode: (Boolean) -> Unit) {
         }
     }
     var demoOpen by rememberSaveable { mutableStateOf(false) }
+    val demo = container.demo
+    val demoUi = demo?.director?.ui?.collectAsState()?.value
+    val demoLine = container.demoCaptions?.collectAsState()?.value
 
     Box(Modifier.fillMaxSize().background(DC.Bg)) {
         Column(Modifier.fillMaxSize()) {
@@ -69,6 +74,12 @@ fun DeulleulCarRoot(container: AppContainer, onDemoMode: (Boolean) -> Unit) {
                 if (!state.driving && state.screen != Screen.SETTINGS) {
                     BigButton("설정", c::openSettings, style = ButtonStyle.NEUTRAL, height = 44.dp, fontSize = 17.sp)
                 }
+            }
+            if (demo != null && demoUi != null && demoUi.visible) {
+                DemoBar(
+                    demoUi, onSpeed = demo.director::toggleSpeed, onNext = demo.director::next, onDismiss = demo.director::dismiss,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
             }
             Box(Modifier.weight(1f).fillMaxWidth()) {
                 val urgent = state.urgent
@@ -109,10 +120,9 @@ fun DeulleulCarRoot(container: AppContainer, onDemoMode: (Boolean) -> Unit) {
                         onShowPlan = c::showPlan,
                     )
                 }
-                Captions(state, onDismissNotice = c::dismissNotice, modifier = Modifier.align(Alignment.BottomCenter))
+                Captions(state, demoLine, onDismissNotice = c::dismissNotice, modifier = Modifier.align(Alignment.BottomCenter))
             }
         }
-        val demo = container.demo
         if (demo != null) {
             AnimatedVisibility(
                 demoOpen, modifier = Modifier.align(Alignment.CenterEnd),
@@ -149,9 +159,12 @@ private val ai.deulleulcar.app.vehicle.VehicleFeature.label: String
         ai.deulleulcar.app.vehicle.VehicleFeature.WASHER_FLUID -> "워셔액"
     }
 
-/** 아래쪽 자막: 안내(오류 등)와 앱이 방금 한 말. 소리가 없는 데모 모드에서도 흐름을 볼 수 있다. */
+/**
+ * 아래쪽 자막: 안내(오류 등)와 앱이 방금 한 말. 데모 모드는 소리 대신 가짜 TTS가 말한 문장([demoLine])을
+ * 모두 띄운다(도착 안내·긴급 안내 포함).
+ */
 @Composable
-private fun Captions(state: AppUiState, onDismissNotice: () -> Unit, modifier: Modifier) {
+private fun Captions(state: AppUiState, demoLine: SpokenLine?, onDismissNotice: () -> Unit, modifier: Modifier) {
     val notice = state.notice
     LaunchedEffect(notice) {
         if (notice != null) {
@@ -159,9 +172,10 @@ private fun Captions(state: AppUiState, onDismissNotice: () -> Unit, modifier: M
             onDismissNotice()
         }
     }
-    val spoken = state.voice.spoken
+    val spoken = demoLine?.text ?: state.voice.spoken
+    val spokenKey: Any? = demoLine ?: state.voice.spoken
     var showSpoken by remember { mutableStateOf(false) }
-    LaunchedEffect(spoken) {
+    LaunchedEffect(spokenKey) {
         showSpoken = spoken != null
         delay(9_000)
         showSpoken = false
@@ -172,7 +186,7 @@ private fun Captions(state: AppUiState, onDismissNotice: () -> Unit, modifier: M
     AnimatedVisibility(text != null, modifier = modifier.padding(bottom = 18.dp), enter = fadeIn(), exit = fadeOut()) {
         Text(
             (if (notice != null) "" else "🔊 ") + (text ?: ""),
-            color = DC.Text, fontSize = 19.sp, maxLines = 2,
+            color = DC.Text, fontSize = 19.sp, maxLines = 3,
             modifier = Modifier.widthIn(max = 1000.dp).clip(RoundedCornerShape(16.dp)).background(DC.Surface2.copy(alpha = 0.96f))
                 .clickable(role = Role.Button, onClick = onDismissNotice).padding(horizontal = 22.dp, vertical = 12.dp),
         )

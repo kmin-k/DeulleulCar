@@ -5,13 +5,14 @@ import ai.deulleulcar.app.location.FakeLocationSource
 import ai.deulleulcar.app.navi.FakeNaviPort
 import ai.deulleulcar.app.vehicle.FakeVehicleSignalSource
 import ai.deulleulcar.app.voice.FakeSpeechInput
+import ai.deulleulcar.core.demo.DemoScenarios
 import ai.deulleulcar.core.model.Gear
 import ai.deulleulcar.core.model.TelltaleState
 import ai.deulleulcar.core.model.TelltaleType
 
 /**
- * 데모 모드(가짜 SDK)에서 시나리오 1~3을 손으로 진행하는 버튼 모음. 화면은 [DemoPanel].
- * 위치 시뮬레이션·자동 진행 같은 본격 데모 모드(T15)는 이 클래스에 덧붙인다.
+ * 데모 모드(가짜 SDK) 조작 버튼 모음. 화면은 [DemoPanel]과 데모 바.
+ * 시나리오 자동 진행·가상 주행은 [director]가 하고, 여기 나머지는 손으로 신호를 넣는 버튼이다.
  */
 class DemoControls(
     private val vehicle: FakeVehicleSignalSource,
@@ -19,6 +20,7 @@ class DemoControls(
     private val location: FakeLocationSource,
     private val speechInput: FakeSpeechInput,
     private val controller: AppController,
+    val director: DemoDirector,
 ) {
     val snapshot get() = vehicle.snapshot
 
@@ -36,11 +38,8 @@ class DemoControls(
     /** 정기 점검 주기(10,000km)를 넘긴 누적 주행거리 / 점검 직후. */
     fun inspectionDue(due: Boolean) = vehicle.odometer(if (due) 12_000.0 else 5_000.0)
 
-    /** 다음 경유지 도착: 위치를 그곳으로 옮기고 내비 도착 이벤트를 낸다. */
-    fun arriveNext() {
-        controller.state.value.trip?.rolling?.exposed?.firstOrNull()?.let { location.moveTo(it.place.point) }
-        navi.arriveNext()
-    }
+    /** 다음 정류지에 바로 도착(가상 주행을 건너뛴다). */
+    fun arriveNext() = director.next()
 
     fun arriveDestination() {
         controller.state.value.trip?.plan?.destination?.let { location.moveTo(it) }
@@ -57,7 +56,7 @@ class DemoControls(
     }
 
     companion object {
-        const val SCENARIO_1 = "퇴근길에 약국이랑 마트 들렀다 집에 가자"
-        const val SCENARIO_2 = "세탁소, 약국, 마트 들렀다 집"
+        const val SCENARIO_1 = DemoScenarios.ERRANDS_2
+        const val SCENARIO_2 = DemoScenarios.ERRANDS_3
     }
 }

@@ -1,6 +1,7 @@
 package ai.deulleulcar.app
 
 import ai.deulleulcar.app.demo.DemoControls
+import ai.deulleulcar.app.demo.DemoDirector
 import ai.deulleulcar.app.flow.AppController
 import ai.deulleulcar.app.flow.ModeInfo
 import ai.deulleulcar.app.location.FakeLocationSource
@@ -57,7 +58,8 @@ class AppContainer(
     val useFakes: Boolean = settingsStore.settings.value.demoMode,
 ) {
     private val appContext = context.applicationContext
-    private val createdAt = System.currentTimeMillis()
+    /** 데모 시각 기준점. 시나리오를 처음부터 하면 다시 18:40으로 맞춘다. */
+    @Volatile private var clockOrigin = System.currentTimeMillis()
 
     /** 어댑터끼리 잇는 앱 수명 스코프(메인 스레드). */
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -107,7 +109,11 @@ class AppContainer(
      */
     fun now(): LocalDateTime {
         if (!(useFakes && settings.demoClock)) return LocalDateTime.now()
-        return demoStart.plusNanos((System.currentTimeMillis() - createdAt) * 1_000_000)
+        return demoStart.plusNanos((System.currentTimeMillis() - clockOrigin) * 1_000_000)
+    }
+
+    fun resetDemoClock() {
+        clockOrigin = System.currentTimeMillis()
     }
 
     private val demoStart: LocalDateTime by lazy {
@@ -161,15 +167,35 @@ class AppContainer(
     }
     val controller: AppController by controllerLazy
 
-    /** 데모 모드일 때만 있다(가짜 차량·내비·위치를 손으로 움직이는 패널). */
-    val demo: DemoControls? by lazy {
+    /** 데모 모드일 때만 있다(시나리오 자동 진행, 가상 주행, 가짜 차량·내비·위치 조작). */
+    private val demoLazy = lazy {
         if (!useFakes) null else DemoControls(
             vehicle = vehicle as FakeVehicleSignalSource,
             navi = navi as FakeNaviPort,
             location = location as FakeLocationSource,
             speechInput = speechInput as FakeSpeechInput,
             controller = controller,
+            director = DemoDirector(
+                scope = appScope,
+                controller = controller,
+                vehicle = vehicle as FakeVehicleSignalSource,
+                navi = navi as FakeNaviPort,
+                location = location as FakeLocationSource,
+                speechInput = speechInput as FakeSpeechInput,
+                startPoint = { knownPlaces().workPoint },
+                onReset = ::resetDemoClock,
+            ),
         )
+    }
+    val demo: DemoControls? by demoLazy
+
+    /** 데모 자막: 가짜 TTS가 "말한" 문장. 실제 TTS면 null. */
+    val demoCaptions get() = (speechOutput as? FakeSpeechOutput)?.last
+
+    /** 컨트롤러와 (데모 모드면) 가상 주행 틱을 시작한다. 여러 번 불러도 된다. */
+    fun start() {
+        controller.start()
+        demo?.director?.start()
     }
 
     /** 런타임 권한 결과가 온 뒤: 권한이 없어 꺼져 있던 위치·차량 신호를 다시 켠다(이미 켜져 있으면 그대로). */
@@ -195,6 +221,7 @@ class AppContainer(
 
     /** 컨테이너를 버릴 때(데모 모드 전환). 만든 어댑터만 놓는다. */
     fun release() {
+        if (demoLazy.isInitialized()) demo?.director?.stop()
         if (controllerLazy.isInitialized()) controller.stop()
         if (vehicleLazy.isInitialized()) vehicle.stop()
         if (speechInputLazy.isInitialized()) speechInput.release()

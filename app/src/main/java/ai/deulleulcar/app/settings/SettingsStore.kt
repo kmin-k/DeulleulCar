@@ -59,14 +59,18 @@ class PrefsSettingsStore(context: Context) : SettingsStore {
         state.value = next.copy(geminiApiKey = next.geminiApiKey.trim(), kakaoRestApiKey = next.kakaoRestApiKey.trim())
     }
 
-    private fun read() = Settings(
-        geminiApiKey = prefs.getString(K_GEMINI, "").orEmpty(),
-        kakaoRestApiKey = prefs.getString(K_KAKAO, "").orEmpty(),
-        demoMode = prefs.getBoolean(K_DEMO, DEFAULT_DEMO),
+    private fun read(): Settings {
+        val gemini = prefs.getString(K_GEMINI, "").orEmpty()
+        val kakao = prefs.getString(K_KAKAO, "").orEmpty()
+        return Settings(
+        geminiApiKey = gemini,
+        kakaoRestApiKey = kakao,
+        demoMode = if (prefs.contains(K_DEMO)) prefs.getBoolean(K_DEMO, false) else defaultDemoMode(gemini, kakao),
         demoClock = prefs.getBoolean(K_DEMO_CLOCK, true),
         home = point(K_HOME),
         work = point(K_WORK),
-    )
+        )
+    }
 
     private fun point(key: String): GeoPoint? {
         if (!prefs.contains("$key.lat")) return null
@@ -92,8 +96,8 @@ class PrefsSettingsStore(context: Context) : SettingsStore {
         private const val K_HOME = "home"
         private const val K_WORK = "work"
 
-        /** 첫 실행은 실제 SDK 모드. 데모 모드는 설정에서 켠다. */
-        const val DEFAULT_DEMO = false
+        /** 데모 모드를 한 번도 고른 적이 없으면: 키가 하나도 없을 때(심사·첫 실행) 데모 모드로 시작한다. */
+        fun defaultDemoMode(geminiKey: String, kakaoKey: String): Boolean = geminiKey.isBlank() && kakaoKey.isBlank()
     }
 }
 

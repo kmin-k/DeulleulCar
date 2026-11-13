@@ -88,7 +88,7 @@ fun SettingsScreen(
         Panel(Modifier.weight(1f).fillMaxSize()) {
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 PanelTitle("데모")
-                SwitchRow("데모 모드", "차량·내비·위치를 가상으로 움직여 시나리오를 보여 줘요(앱이 다시 시작돼요).", settings.demoMode, onDemoMode)
+                SwitchRow("데모 모드", "차량·내비·위치를 가상으로 움직여 시나리오 1~4를 보여 줘요. 키가 없으면 처음부터 켜져 있어요(바꾸면 앱이 다시 시작돼요).", settings.demoMode, onDemoMode)
                 if (settings.demoMode) {
                     SwitchRow("데모 시각 (평일 18:40)", "영업시간 시나리오를 재현하려고 퇴근 시각으로 맞춰요.", settings.demoClock, onDemoClock)
                 }

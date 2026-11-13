@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         // 마이크(STT)·위치 등 런타임 권한. 거절해도 앱은 해당 기능 없이 동작한다.
         RuntimePermissions.missing(this).takeIf { it.isNotEmpty() }?.let { permissionRequest.launch(it.toTypedArray()) }
-        appContainer.controller.start()
+        appContainer.start()
         setContent {
             DeulleulCarTheme {
                 DeulleulCarRoot(appContainer, onDemoMode = ::switchDemoMode)
@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
 
     private fun switchDemoMode(enabled: Boolean) {
         deulleulCarApp.setDemoMode(enabled)
-        appContainer.controller.start()
+        appContainer.start()
         recreate()
     }
 }
