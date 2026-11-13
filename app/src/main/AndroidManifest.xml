@@ -25,11 +25,17 @@
         android:theme="@style/Theme.DeulleulCar">
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:resizeableActivity="true"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- AAOS: 주행 중에도 띄울 수 있는 화면. 주행 중에는 미니 카드(S3)만 그리고 음성으로 조작한다. -->
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
         </activity>
     </application>
 </manifest>

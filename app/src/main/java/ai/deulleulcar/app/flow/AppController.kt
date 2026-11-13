@@ -3,6 +3,7 @@ package ai.deulleulcar.app.flow
 import ai.deulleulcar.app.location.LocationSource
 import ai.deulleulcar.app.navi.NaviPort
 import ai.deulleulcar.app.navi.NaviPortEvent
+import ai.deulleulcar.app.sdk.FeatureState
 import ai.deulleulcar.app.vehicle.VehicleSignalSource
 import ai.deulleulcar.app.voice.SpeechInput
 import ai.deulleulcar.app.voice.SpeechOutput
@@ -235,9 +236,13 @@ class AppController(
                 }
             }
             is SttEvent.Error -> {
+                val quiet = autoListening
                 autoListening = false
                 _state.update {
-                    it.copy(voice = it.voice.copy(listening = false, partial = null), notice = "음성 인식을 쓸 수 없어요. 글자로 입력해 주세요.")
+                    it.copy(
+                        voice = it.voice.copy(listening = false, partial = null),
+                        notice = if (quiet) it.notice else "음성 인식을 쓸 수 없어요. 버튼이나 글자로 답해 주세요.",
+                    )
                 }
             }
             SttEvent.Ended -> _state.update { it.copy(voice = it.voice.copy(listening = false)) }
@@ -809,7 +814,8 @@ class AppController(
         }
         speechOut.speak(text, SpeechPriority.NORMAL) { completed ->
             scope.launch {
-                if (completed && currentQuestion() != null && !_state.value.driving && !speechIn.listening.value) {
+                val ready = speechIn.state.value == FeatureState.ACTIVE
+                if (completed && ready && currentQuestion() != null && !_state.value.driving && !speechIn.listening.value) {
                     autoListening = true
                     speechIn.listen(config.autoListenTimeoutMs)
                 }

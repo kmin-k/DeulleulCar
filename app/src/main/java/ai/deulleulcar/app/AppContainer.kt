@@ -9,6 +9,7 @@ import ai.deulleulcar.app.location.PleosLocationSource
 import ai.deulleulcar.app.navi.FakeNaviPort
 import ai.deulleulcar.app.navi.NaviPort
 import ai.deulleulcar.app.navi.PleosNaviPort
+import ai.deulleulcar.app.sdk.FeatureState
 import ai.deulleulcar.app.settings.Settings
 import ai.deulleulcar.app.settings.SettingsStore
 import ai.deulleulcar.app.vehicle.FakeVehicleSignalSource
@@ -169,6 +170,15 @@ class AppContainer(
             speechInput = speechInput as FakeSpeechInput,
             controller = controller,
         )
+    }
+
+    /** 런타임 권한 결과가 온 뒤: 권한이 없어 꺼져 있던 위치·차량 신호를 다시 켠다(이미 켜져 있으면 그대로). */
+    fun onPermissionsChanged() {
+        if (locationLazy.isInitialized()) location.start()
+        if (vehicleLazy.isInitialized() && vehicle.features.value.values.any { it == FeatureState.PERMISSION_DENIED }) {
+            vehicle.stop()
+            vehicle.start()
+        }
     }
 
     /** 설정 "지금 위치를 집/회사로". 위치를 모르면 안내만 띄운다. */
