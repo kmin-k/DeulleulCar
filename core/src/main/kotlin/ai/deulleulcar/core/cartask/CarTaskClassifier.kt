@@ -83,6 +83,9 @@ class CarTaskClassifier(
 
     fun find(kind: CarTaskKind): CarTask? = active[kind]
 
+    /** 모든 할 일을 지운다(데모 시나리오 초기화). 해소 이벤트는 내지 않는다. */
+    fun clear() = active.clear()
+
     fun assess(signal: CarSignal): Assessment = when (signal) {
         is CarSignal.Telltale -> {
             val base = signal.type.baseSeverity
