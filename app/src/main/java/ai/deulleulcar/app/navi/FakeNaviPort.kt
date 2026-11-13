@@ -58,6 +58,20 @@ class FakeNaviPort : NaviPort {
         _events.tryEmit(NaviPortEvent.Machine(NaviEvent.WaypointArrived(placeId = stop.place.id, slot = WaypointSlot.FIRST)))
     }
 
+    /** 특정 경유지에 도착(데모 주행 시뮬레이션). */
+    @Synchronized
+    fun arrive(placeId: String) {
+        val slot = slots.indexOfFirst { it?.place?.id == placeId }.takeIf { it >= 0 }?.let { WaypointSlot.entries[it] }
+        _events.tryEmit(NaviPortEvent.Machine(NaviEvent.WaypointArrived(placeId = placeId, slot = slot)))
+    }
+
+    /** 경유지·회전 정보를 비운다(데모 시나리오 초기화). */
+    @Synchronized
+    fun reset() {
+        slots.fill(null)
+        _nextTurn.value = null
+    }
+
     fun arriveDestination() {
         _nextTurn.value = null
         _events.tryEmit(NaviPortEvent.Machine(NaviEvent.DestinationArrived))

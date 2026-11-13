@@ -162,6 +162,33 @@ class AppController(
 
     fun setMode(mode: ModeInfo) = _state.update { it.copy(mode = mode) }
 
+    /**
+     * 데모 시나리오를 처음부터: 계획·안내·할 일·질문을 모두 비운다. 차량 값은 호출한 쪽이 먼저 되돌린다
+     * (기어는 [VehicleSignalSource.snapshot]을 따른다). 해소 알림·요약은 내지 않는다.
+     */
+    fun resetForDemo() {
+        planJob?.cancel()
+        hintJob?.cancel()
+        urgentRepeatJobs.values.forEach { it.cancel() }
+        urgentRepeatJobs.clear()
+        tripId?.let { opportunities.endTrip(it) }
+        machine = null
+        tripId = null
+        tripRemainingPlan = null
+        location.removeAllProximityAlerts()
+        visitedTaskIds.clear()
+        pendingParkedAsk.clear()
+        askedTaskIds.clear()
+        bestFix.clear()
+        classifier.clear()
+        autoListening = false
+        speechOut.stopAll()
+        speechIn.stopListening()
+        startupUntil = java.time.Instant.MIN
+        val drive = vehicle.snapshot.value.gear?.let { DriveState.from(it) } ?: DriveState.PARKED
+        _state.value = AppUiState(mode = _state.value.mode, drive = drive)
+    }
+
     // ───────────────────────── 화면 이동 ─────────────────────────
 
     fun openSettings() = _state.update { it.copy(screen = Screen.SETTINGS) }

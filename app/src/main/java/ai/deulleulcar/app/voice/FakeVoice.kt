@@ -23,6 +23,11 @@ class FakeSpeechOutput(private val autoComplete: Boolean = true) : SpeechOutput 
     private val queue = SpeechQueue<QueuedSpeech> { it.priority }
     val spoken = mutableListOf<String>()
 
+    private val _last = MutableStateFlow<SpokenLine?>(null)
+
+    /** 마지막으로 "말한" 문장. 소리가 없는 데모 모드에서 자막으로 보여 준다. */
+    val last: StateFlow<SpokenLine?> = _last.asStateFlow()
+
     override fun start() {
         _state.value = FeatureState.ACTIVE
     }
@@ -58,12 +63,16 @@ class FakeSpeechOutput(private val autoComplete: Boolean = true) : SpeechOutput 
         while (true) {
             val item = queue.next() ?: return
             spoken += item.text
+            _last.value = SpokenLine(item.text, spoken.size)
             _speaking.value = true
             if (!autoComplete) return
             finish(completed = true)
         }
     }
 }
+
+/** 자막 한 줄. [seq]가 달라야 같은 문장을 다시 말해도 다시 띄운다. */
+data class SpokenLine(val text: String, val seq: Int)
 
 /** 데모·테스트용 STT. [listen]하면 [scriptedUtterances]를 하나씩 최종 결과로 돌려준다. */
 class FakeSpeechInput(private val scriptedUtterances: ArrayDeque<String> = ArrayDeque()) : SpeechInput {

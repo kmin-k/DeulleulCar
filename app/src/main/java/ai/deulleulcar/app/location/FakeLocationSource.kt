@@ -39,6 +39,13 @@ class FakeLocationSource(initial: GeoPoint? = null) : LocationSource {
         }
     }
 
+    /** 근접 알림을 모두 지우고 [point]로 옮긴다(데모 시나리오 초기화). */
+    @Synchronized
+    fun reset(point: GeoPoint) {
+        alerts.clear()
+        _location.value = LocationFix(point, 0f, 1f, Instant.now().toEpochMilli())
+    }
+
     @Synchronized
     override fun addProximityAlert(placeId: String, point: GeoPoint, radiusM: Float) {
         val inside = _location.value?.point?.let { it.distanceTo(point) <= radiusM } ?: false

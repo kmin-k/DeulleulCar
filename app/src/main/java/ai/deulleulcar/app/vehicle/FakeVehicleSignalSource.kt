@@ -43,6 +43,11 @@ class FakeVehicleSignalSource(
         _signals.tryEmit(signal)
     }
 
+    /** 신호를 내지 않고 값만 바꾼다(데모 시나리오 초기화: 할 일은 컨트롤러가 따로 비운다). */
+    fun reset(snapshot: VehicleSnapshot) {
+        _snapshot.value = snapshot
+    }
+
     fun telltale(type: TelltaleType, state: TelltaleState = TelltaleState.ON) = emit(CarSignal.Telltale(type, state))
 
     fun range(km: Double) = emit(CarSignal.RemainingRange(km))
