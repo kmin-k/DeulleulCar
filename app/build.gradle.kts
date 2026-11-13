@@ -1,7 +1,20 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
+
+// release 서명 정보는 저장소에 넣지 않는다(keystore.properties, *.jks는 .gitignore).
+// 파일이 없으면 서명 없이 release를 만든다(빌드는 되지만 설치하려면 따로 서명해야 함).
+val keystoreProps = Properties().apply {
+    val f = rootProject.file("keystore.properties")
+    if (f.exists()) f.reader().use { load(it) }
+}
+val hasReleaseKey = listOf("storeFile", "storePassword", "keyAlias", "keyPassword").all {
+    !keystoreProps.getProperty(it).isNullOrBlank()
+} && rootProject.file(keystoreProps.getProperty("storeFile")).exists()
+if (!hasReleaseKey) logger.warn("keystore.properties가 없거나 불완전해 release APK를 서명하지 않습니다.")
 
 android {
     namespace = "ai.deulleulcar.app"
@@ -12,12 +25,26 @@ android {
         minSdk = 28
         targetSdk = 37
         versionCode = 1
-        versionName = "0.1.0"
+        versionName = "1.0.0"
+    }
+
+    signingConfigs {
+        if (hasReleaseKey) {
+            create("release") {
+                storeFile = rootProject.file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
         release {
+            // Pleos SDK가 리플렉션·AIDL을 쓰므로 난독화·축소는 끈다.
             isMinifyEnabled = false
+            if (hasReleaseKey) signingConfig = signingConfigs.getByName("release")
+            // API 키는 APK에 넣지 않는다(BuildConfig 미사용). 키는 실행 중 설정 화면에서 입력한다.
         }
     }
 
