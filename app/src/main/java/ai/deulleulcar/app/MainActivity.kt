@@ -1,54 +1,40 @@
 package ai.deulleulcar.app
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
 import ai.deulleulcar.app.sdk.RuntimePermissions
+import ai.deulleulcar.app.ui.DeulleulCarRoot
+import ai.deulleulcar.app.ui.theme.DeulleulCarTheme
+import android.os.Bundle
+import android.view.WindowManager
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
 
+/**
+ * 유일한 화면. 주행 중에도 쓰는 앱이라 매니페스트에 `distractionOptimized`로 표시하고,
+ * 주행 중에는 미니 카드(S3)만 그린다(글자 입력·긴 목록 없음).
+ */
 class MainActivity : ComponentActivity() {
-    private val permissionRequest = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { }
+    private val permissionRequest = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        // 권한을 받은 뒤 권한 때문에 못 켠 어댑터를 다시 연결한다
+        appContainer.onPermissionsChanged()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         // 마이크(STT)·위치 등 런타임 권한. 거절해도 앱은 해당 기능 없이 동작한다.
         RuntimePermissions.missing(this).takeIf { it.isNotEmpty() }?.let { permissionRequest.launch(it.toTypedArray()) }
-        setContent { PlaceholderScreen() }
+        appContainer.controller.start()
+        setContent {
+            DeulleulCarTheme {
+                DeulleulCarRoot(appContainer, onDemoMode = ::switchDemoMode)
+            }
+        }
+    }
+
+    private fun switchDemoMode(enabled: Boolean) {
+        deulleulCarApp.setDemoMode(enabled)
+        appContainer.controller.start()
+        recreate()
     }
 }
-
-private val Background = Color(0xFF0E1116)
-private val TextPrimary = Color(0xFFF2F4F7)
-
-/** 임시 화면. 실제 UI는 T14에서 구현한다. */
-@Composable
-fun PlaceholderScreen() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Background),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = "들를Car",
-            color = TextPrimary,
-            fontSize = 48.sp,
-            fontWeight = FontWeight.Bold,
-        )
-    }
-}
-
-@Preview(widthDp = 960, heightDp = 360)
-@Composable
-private fun PlaceholderPreview() = PlaceholderScreen()
