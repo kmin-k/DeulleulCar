@@ -309,7 +309,7 @@
 | 시나리오 3 | Virtual Console TPMS 경고등 → 권장 등록 → **경로 자동 추가 없음** → 다음 경로 편성 때 추천 → 수락 시 합침 |
 | 긴급·보류 | 긴급은 즉시 TTS + 해결 장소 제안, 보류는 홈 카드에 유지 |
 | Fallback | API 키 없이 규칙 기반으로 시나리오 1~3 동작 |
-| 제출물 | GitHub(소스·release APK·README), 시연 영상 |
+| 제출물 | GitHub(소스·release APK·README), 기획서 |
 
 ### 5-6. 단계별 개발 현황과 2차 PT까지의 고도화
 
@@ -433,7 +433,7 @@
 |---|---|
 | GitHub 저장소 (소스·release APK·README) | https://github.com/kmin-k/DeulleulCar |
 | release APK | 저장소 `apk/DeulleulCarStudio_DeulleulCar_release.apk` |
-| 시연 영상 (60~120초, 시나리오 1·3 포함) | (시연 영상 링크: 제출 시 기입) |
+| 실행 방법 | API 키 없이 데모 모드로 시작, 상단 [데모]에서 시나리오 ①~④ 자동 재생 (README 참조) |
 
 ### 7-3. 출처
 본문 각주 참조.
